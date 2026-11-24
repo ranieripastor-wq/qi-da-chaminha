@@ -1,5 +1,5 @@
 // Rede primeiro: com o PC ligado pega a versão nova; sem rede, usa a última guardada. Ao mudar arquivos, troque o número da CAIXA.
-const CAIXA = 'qi-chaminha-9';
+const CAIXA = 'qi-chaminha-10';
 const TUDO = ['./', 'index.html', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png', 'perguntas.js', 'perguntas2.js', 'arena.js', 'adedonha.js'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CAIXA).then(k => k.addAll(TUDO)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(
