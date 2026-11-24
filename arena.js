@@ -81,6 +81,7 @@ function desenhaPlacar() {
 function mostrarPergunta(i) {
   const a = arena, q = a.perguntas[i];
   clearTimeout(a.espera); a.i = i; a.respondeu = false; a.inicio = performance.now();
+  if (a.diario) marcarDiario(a, false); // viu a pergunta e saiu: conta como erro
   $('arenaNum').textContent = `${TEMAS[q.c][0]} ${TEMAS[q.c][1]} · ${i + 1}/${a.perguntas.length}`;
   $('arenaPergunta').textContent = q.p;
   $('arenaExp').textContent = a.modo === 'duelo' ? 'Rápido! Quem responde primeiro ganha mais pontos.' : 'Responda antes do tempo acabar!';
@@ -107,7 +108,7 @@ function responderArena(escolha, el) {
   const pts = certo ? 100 + Math.round(50 * resta) : 0;
   document.querySelectorAll('#arenaOps .opc').forEach(b => { b.disabled = true; if (b === el) b.classList.add(certo ? 'certo' : 'errado'); });
   if (certo) { som([[660, 0, .1], [880, .08, .18]]); vibrar(30); } else { somErro(); vibrar(120); }
-  if (a.modo === 'solo') { pontuar(a.eu, a.i, pts); revelar(); return; }
+  if (a.modo === 'solo') { pontuar(a.eu, a.i, pts); if (a.diario) marcarDiario(a, certo); revelar(); return; }
   $('arenaExp').textContent = (certo ? `✅ +${pts}!` : '❌ Errou...') + ' Esperando os outros...';
   if (a.host) { pontuar(a.eu, a.i, pts); avisarTodos({ t: 'placar', jog: a.jog }); checarFimQuestao(); }
   else a.conn.send({ t: 'r', i: a.i, pts });
@@ -130,6 +131,7 @@ function revelar() {
 
 function fimArena() {
   const a = arena; if (!a) return;
+  if (a.diario) return fimDiario();
   clearInterval(a.relogio); clearTimeout(a.espera);
   const eu = a.jog[a.eu], duelo = a.modo === 'duelo', js = ordenados(a);
   const ganho = eu.acertos * 10; guardar('xp', ler('xp', 0) + ganho); marcarDia();

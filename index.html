@@ -157,6 +157,11 @@
   .duelBtn { width:100%; max-width:380px; display:flex; align-items:center; gap:10px; padding:8px 14px; font-size:22px; line-height:1.1;
     background:linear-gradient(90deg,#FF8A1F,#F2542D 48%,#4AA8E0 52%,#7FD1F5); color:#fff; box-shadow:0 5px 0 #123A5A; border-radius:20px; text-align:left; }
   .duelBtn small { display:block; font-size:14px; opacity:.9; } .duelBtn .mini { display:flex; } .duelBtn svg { width:34px; height:auto; }
+  .diaBtn { width:100%; max-width:380px; display:flex; align-items:center; gap:10px; padding:8px 14px; font-size:21px; line-height:1.1; text-align:left;
+    background:linear-gradient(90deg,#FFD23F,#7BD389); color:var(--tinta); box-shadow:0 5px 0 #2E6B3A; border-radius:20px; }
+  .diaBtn small { display:block; font-size:14px; font-weight:700; opacity:.85; } .diaBtn .calend { font-size:32px; }
+  .diaBtn.feito { background:#3A1E10; color:#FFE3A8; box-shadow:0 5px 0 #20100A; }
+  .quadrinhos { font-size:21px; letter-spacing:-1px; line-height:1.3; white-space:nowrap; }
   .chips { display:flex; flex-wrap:wrap; gap:8px; } .chip { font-size:16px; min-height:40px; }
   .chip[aria-pressed="false"] { background:#3A1E10; color:#FFE3A8; box-shadow:none; }
   .painel { background:#3A1E10; border-radius:18px; padding:14px; color:#FFE3A8; display:flex; flex-direction:column; gap:10px; }
@@ -207,6 +212,7 @@
   <h1 style="font-size:54px;text-align:left;margin:0">QI<small>da Chaminha</small></h1></div>
   <p style="font-size:16px">Descubra seu QI e dispute com todo o Brasil</p>
   <button class="btn grande" id="testeQI">🧠 TESTE DE QI<small>20 perguntas · uns 7 minutos</small></button>
+  <button class="btn diaBtn" id="abrirDiario"></button>
   <button class="teaser" id="teaser"></button>
   <button class="btn duelBtn" id="abrirDuelo"><span class="mini" id="duelMini"></span><span>⚔️ DUELO AO VIVO<small>Chaminha × Gelinho</small></span></button>
   <div class="menu">
@@ -313,6 +319,7 @@
     <button class="btn fantasma" id="trocarNome" style="font-size:14px;border-width:2px;min-height:36px">✏️ Apelido</button>
   </header>
   <div class="abas" role="tablist">
+    <button class="btn" role="tab" data-aba="hoje" aria-selected="false">Hoje</button>
     <button class="btn" role="tab" data-aba="semanal" aria-selected="true">Semana</button>
     <button class="btn" role="tab" data-aba="geral" aria-selected="false">Geral</button>
     <button class="btn" role="tab" data-aba="famosos" aria-selected="false">Famosos</button>
@@ -881,17 +888,20 @@ function desenhaRanking() {
     $('rankFamosos').innerHTML = lista.map((x, i) => linhaRank(i + 1, x.n, x.v, x.voce)).join('');
     return;
   }
-  const d = rankDados, lista = d?.[abaRank] || [], pos = d?.[abaRank === 'semanal' ? 'posSemana' : 'posGeral'];
+  const dd = diaDados?.dia === diaBR() ? diaDados : diaDados && { top: [], pos: null };
+  const d = abaRank === 'hoje' ? dd && { hoje: dd.top.map(x => ({ nome: x.nome, qi: x.pts })), posHoje: dd.pos } : rankDados;
+  const lista = d?.[abaRank] || [], pos = d?.[{ semanal: 'posSemana', geral: 'posGeral', hoje: 'posHoje' }[abaRank]];
+  $('rankJogar').innerHTML = abaRank === 'hoje' ? (feitoHoje()?.fim ? `✅ Feito hoje · volta em ${horasParaAmanha()}` : `📅 Fazer o desafio #${numDesafio()}`) : '🧠 Fazer teste e subir';
   if (!d) { $('rankInfo').textContent = 'Carregando o ranking... (precisa de internet)'; $('rankPodio').innerHTML = ''; $('rankFamosos').innerHTML = ''; return; }
-  $('rankInfo').innerHTML = (abaRank === 'semanal' ? 'Zera toda segunda-feira. ' : 'O melhor QI de cada um. ')
-    + (pos ? `Você: <b style="color:var(--amarelo)">${pos}º</b>` : 'Você ainda não está aqui. Faça um teste!');
+  $('rankInfo').innerHTML = ({ hoje: 'Desafio do dia, em pontos. Zera à meia-noite. ', semanal: 'Zera toda segunda-feira. ', geral: 'O melhor QI de cada um. ' })[abaRank]
+    + (pos ? `Você: <b style="color:var(--amarelo)">${pos}º</b>` : abaRank === 'hoje' ? 'Faça o desafio de hoje para entrar!' : 'Você ainda não está aqui. Faça um teste!');
   const top = [lista[1], lista[0], lista[2]];
   $('rankPodio').innerHTML = lista.length ? top.map((x, k) => x ? `<div class="p${[2, 1, 3][k]}${pos === [2, 1, 3][k] ? ' voce' : ''}">${['🥈', '👑', '🥉'][k]}<span>${esc(x.nome)}</span><em>${x.qi}</em></div>` : '<div></div>').join('') : '';
   $('rankFamosos').innerHTML = lista.length ? lista.slice(3).map((x, i) => linhaRank(i + 4, x.nome, x.qi, pos === i + 4)).join('')
     : '<p style="color:#FFE3A8;text-align:center">Ninguém ainda. Seja o primeiro! 🔥</p>';
 }
 function abrirRanking() {
-  desenhaRanking(); buscarRanking().then(desenhaRanking);
+  desenhaRanking(); buscarRanking().then(desenhaRanking); buscarDiario().then(desenhaRanking);
   const q = ler('melhorQI', 0);
   $('rankNivel').innerHTML = htmlNivel();
   $('rankMetas').innerHTML = METAS_QI.map(m => `<span class="${q >= m ? 'ok' : ''}">${q >= m ? '🏅' : '🔒'} QI ${m}</span>`).join('');
@@ -914,6 +924,7 @@ function atualizaInicio() {
   const seq = ler('diaUlt', '') === hoje() || ler('diaUlt', '') === hoje(-1) ? ler('sequencia', 0) : 0;
   $('sequencia').textContent = seq ? `🔥 ${seq} dia${seq > 1 ? 's' : ''} seguido${seq > 1 ? 's' : ''}` : '🔥 0 dias seguidos';
   desenhaTeaser(); buscarRanking().then(desenhaTeaser);
+  if (typeof desenhaBotaoDiario === 'function') desenhaBotaoDiario();
   $('cartaoNivel').innerHTML = htmlNivel();
   $('recordeInicio').textContent = recorde ? `🏆 Recorde: nível ${recorde}  ·  ⭐ ${estrelasTotal}` : '';
   $('subPegadinha').textContent = nivel > 1 ? `nível ${nivel}` : 'sem fim';
@@ -1291,7 +1302,7 @@ $('testeLogica').onclick = () => iniciarSessao('qi', 'logica');
 $('abrirRanking').onclick = () => { clique(); abrirRanking(); };
 $('voltarRanking').onclick = () => { clique(); mostrar('inicio'); };
 $('teaser').onclick = () => { clique(); abrirRanking(); };
-$('rankJogar').onclick = () => iniciarSessao('qi');
+$('rankJogar').onclick = () => abaRank === 'hoje' ? iniciarDiario() : iniciarSessao('qi');
 document.querySelectorAll('.abas [data-aba]').forEach(b => b.onclick = () => { clique(); abaRank = b.dataset.aba; desenhaRanking(); });
 $('trocarNome').onclick = async () => {
   clique(); if (!(await pedirApelido())) return;
@@ -1338,8 +1349,10 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 </script>
 <script src="perguntas.js"></script>
 <script src="perguntas2.js"></script>
+<script src="perguntas3.js"></script>
 <script src="arena.js"></script>
 <script src="adedonha.js"></script>
+<script src="diario.js"></script>
 <script>
 $('duelMini').innerHTML = chaminha(34) + gelinho(34);
 $('dueloHeroi').innerHTML = chaminha(80) + '<span style="font-size:34px;font-weight:800;color:var(--amarelo)">VS</span>' + gelinho(80);
