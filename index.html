@@ -147,10 +147,11 @@
   .podio .voce { outline:4px solid var(--brasa); }
   .posicao { background:var(--brasa); color:#fff; border-radius:16px; padding:8px 14px; font-weight:800; font-size:19px; line-height:1.25; animation:pop .4s; }
   .posicao:empty { display:none; }
-  .modal { position:fixed; inset:0; background:rgba(43,20,8,.9); display:none; align-items:center; justify-content:center; z-index:7; padding:20px; }
+  .modal { position:fixed; inset:0; background:rgba(43,20,8,.9); display:none; align-items:flex-start; overflow:auto; padding-top:max(16px, env(safe-area-inset-top)) !important; justify-content:center; z-index:7; padding:20px; }
   .modal .caixa { background:var(--papel); border-radius:28px; padding:20px; max-width:380px; width:100%; text-align:center; display:flex; flex-direction:column; gap:10px;
     box-shadow:0 8px 0 var(--brasa); animation:pop .4s cubic-bezier(.3,1.6,.5,1); }
-  .modal h2 { margin:0; color:var(--brasa); font-size:28px; }
+  .modal h2 { margin:0; color:var(--brasa); font-size:26px; } .modal .caixa { gap:8px; padding:16px; }
+  .podio:empty { display:none; }
   .modal input { font-size:22px; padding:10px 14px; border-radius:14px; border:3px solid var(--tinta); text-align:center; font-weight:800; color:var(--tinta); }
   h3.secao { color:var(--amarelo); margin:18px 0 6px; font-size:20px; }
   .areaBtn { display:flex; align-items:center; gap:12px; font-size:24px; padding:12px 18px; width:100%; }
@@ -217,10 +218,10 @@
   <div class="caixa">
     <h2 id="nomeTitulo">Entre no ranking! 🏆</h2>
     <p style="margin:0;font-size:18px" id="nomeTexto">Como você quer aparecer para o Brasil?</p>
-    <input id="nomeInput" maxlength="16" placeholder="Seu apelido" autocomplete="nickname" enterkeyhint="done">
-    <small style="color:#8A5A3A">Use um apelido, não o nome completo. Todo mundo vai ver.</small>
+    <input id="nomeInput" name="apelido-ranking" maxlength="16" placeholder="Seu apelido" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done">
     <small id="nomeErro" style="color:var(--vermelho);font-weight:800"></small>
     <button class="btn grande" id="nomeOk" style="font-size:24px">Entrar no ranking</button>
+    <small style="color:#8A5A3A">Use um apelido, não o nome completo. Todo mundo vai ver.</small>
     <button class="btn fantasma" id="nomeNao" style="color:var(--tinta);border-color:var(--tinta)">Agora não</button>
   </div>
 </div>
@@ -791,7 +792,7 @@ function marcarDia() {
 }
 function desenhaTeaser() {
   const d = rankDados, l = d?.semanal || [], pos = d?.posSemana;
-  $('teaser').innerHTML = `<b>🏆 Ranking da semana</b> ${pos ? `· você está em <b>${pos}º</b>` : '· você ainda não entrou'}`
+  $('teaser').innerHTML = `<b>🏆 Ranking da semana</b> ${pos ? `· você: <b>${pos}º</b>` : ''}`
     + `<div class="top3">${l.length ? l.slice(0, 3).map((x, i) => `${['🥇', '🥈', '🥉'][i]} ${esc(x.nome)} ${x.qi}`).join(' &nbsp; ') : 'Ninguém ainda. Seja o primeiro! 🔥'}</div>`;
 }
 function atualizaInicio() {
