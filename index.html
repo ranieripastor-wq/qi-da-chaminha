@@ -117,6 +117,9 @@
   @keyframes subirBalao { from { top:100%; } to { top:-30%; } }
   .cai { animation:cai .8s ease-in forwards !important; }
   @keyframes cai { to { transform:translateY(260px) rotate(200deg); } }
+  .area { display:flex; align-items:center; gap:8px; color:#FFE3A8; font-weight:700; font-size:16px; }
+  .area > span:first-child { width:130px; text-align:left; } .area .barra { flex:1; margin:0; height:12px; }
+  .areaBtn { display:flex; align-items:center; gap:12px; font-size:24px; padding:12px 18px; width:100%; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
   @media (max-height:700px) { #pergunta { font-size:21px; min-height:52px; } #fala { min-height:70px; } }
 </style>
@@ -127,14 +130,38 @@
 <section class="tela ativa" id="inicio">
   <div class="flutua" id="logoChama"></div>
   <h1>Pegadinha<small>da Chaminha</small></h1>
-  <p>Aqui nada é o que parece. 🔥<br>E nenhuma partida é igual!</p>
-  <button class="btn grande" id="jogar">JOGAR</button>
+  <p>Teste de QI e treino do cérebro 🧠<br>Nenhuma partida é igual!</p>
+  <button class="btn grande" id="testeQI">🧠 TESTE DE QI</button>
+  <button class="btn" id="abrirTreino" style="font-size:22px;padding:10px 24px">🏋️ Treino do cérebro</button>
+  <button class="btn" id="jogar" style="font-size:20px;padding:8px 22px">😜 Pegadinhas</button>
   <div id="recordeInicio" style="color:#FFE3A8;font-size:18px;font-weight:700"></div>
-  <button class="btn fantasma" id="recomecar">Recomeçar do nível 1</button>
+  <button class="btn fantasma" id="recomecar" style="font-size:15px">Recomeçar pegadinhas do nível 1</button>
   <button class="btn fantasma" id="somInicio" aria-label="Ligar ou desligar o som">🔊 Som</button>
 </section>
 
 
+
+<section class="tela" id="treino">
+  <header style="display:flex;align-items:center;gap:10px;color:var(--amarelo)">
+    <button class="btn" id="voltarTreino" aria-label="Voltar para o início">◀</button>
+    <h2 style="margin:0;font-size:26px">Treino do cérebro</h2>
+  </header>
+  <p style="color:#FFE3A8;margin:10px 0">Escolha o que treinar. As perguntas se ajustam ao seu nível ⭐.</p>
+  <div id="listaAreas" style="display:flex;flex-direction:column;gap:12px"></div>
+</section>
+
+<section class="tela" id="resultado" style="align-items:center;text-align:center;gap:8px;overflow:auto">
+  <div class="flutua" id="resMascote"></div>
+  <div id="resTitulo" style="color:#FFE3A8;font-size:20px;font-weight:700"></div>
+  <div id="resNumero" style="color:var(--amarelo);font-size:84px;font-weight:800;line-height:1;text-shadow:0 5px 0 var(--brasa)"></div>
+  <div id="resRotulo" style="color:#fff;font-size:22px;font-weight:800"></div>
+  <div id="resDetalhe" style="color:#FFE3A8;font-size:17px"></div>
+  <div id="resBarras" style="width:100%;display:flex;flex-direction:column;gap:6px;margin:6px 0"></div>
+  <button class="btn grande" id="resCompartilhar" style="font-size:22px;padding:10px 26px">📲 Desafiar amigos</button>
+  <button class="btn" id="resTreinar"></button>
+  <span style="display:flex;gap:8px"><button class="btn fantasma" id="resNovo">Novo teste</button><button class="btn fantasma" id="resInicio">Início</button></span>
+  <small style="color:#B89878;max-width:340px">QI estimado para diversão e treino. Não substitui um teste feito por psicólogo.</small>
+</section>
 
 <section class="tela" id="jogo">
   <header>
@@ -396,7 +423,7 @@ const GERADORES = {
     return { id: 'cor' + nomes + alvo + pelaPalavra, p: pelaPalavra ? `Toque na PALAVRA ${usadas[alvo][0]}.` : `Toque no botão ${usadas[alvo][0]}.`,
       dica: pelaPalavra ? 'Agora vale o que está ESCRITO, não a cor.' : 'Não leia: olhe a COR do botão.',
       porque: 'O cérebro lê a palavra antes de ver a cor. Isso tem nome: efeito Stroop!',
-      monta(palco) { const g = grade(palco); usadas.forEach(([, cor], i) => { const b = botao(g, nomes[i], () => i === certoIdx ? ganhar(b) : errar(b));
+      monta(palco) { const g = grade(palco); usadas.forEach(([, cor], i) => { const b = botao(g, nomes[i], () => i === certoIdx ? ganhar(b) : errar(b)); if (i === certoIdx) b.dataset.certo = 1;
         b.style.cssText = `background:${cor};color:#fff;font-size:21px`; }); } };
   },
   contar() {
@@ -439,7 +466,7 @@ const GERADORES = {
   intruso() {
     const [a, b] = embaralha(Object.keys(CATEGORIAS)), itens = embaralha(CATEGORIAS[a]).slice(0, 5), fora = um(CATEGORIAS[b]);
     return { id: 'intruso' + itens + fora, p: 'Qual NÃO combina com os outros?', dica: `Quase todos são ${a}...`, porque: `Todos são ${a}, menos o ${fora}, que é de ${b}!`,
-      monta(palco) { const g = grade(palco, 3); embaralha([...itens, fora]).forEach(x => { const bt = botao(g, x, () => x === fora ? ganhar(bt) : errar(bt)); bt.style.fontSize = '44px'; }); } };
+      monta(palco) { const g = grade(palco, 3); embaralha([...itens, fora]).forEach(x => { const bt = botao(g, x, () => x === fora ? ganhar(bt) : errar(bt)); bt.style.fontSize = '44px'; if (x === fora) bt.dataset.certo = 1; }); } };
   },
   letras() {
     const w = um(PALAVRAS), l = um([...new Set(w)]), n = [...w].filter(c => c === l).length;
@@ -601,7 +628,7 @@ function botao(g, txt, aoTocar) {
 // alternativas sempre embaralhadas, para ninguém decorar a posição
 function botoes(palco, ops, certo, embaixo = false) {
   const g = grade(palco, embaixo ? 4 : 2, embaixo);
-  embaralha(ops).forEach(o => { const b = botao(g, o, () => o === certo ? ganhar(b) : errar(b)); });
+  embaralha(ops).forEach(o => { const b = botao(g, o, () => o === certo ? ganhar(b) : errar(b)); if (o === certo) b.dataset.certo = 1; });
 }
 // encostou: os dois se tocam (com folga), para não exigir pontaria de criança
 function perto(a, b, folga) {
@@ -659,6 +686,7 @@ const ERROS = ['Quase! Pensa diferente 😅', 'Hmm, não é isso...', 'Opa! Tent
 const BOAS_VINDAS = ['Lá vem pegadinha...', 'Essa é das boas!', 'Pensa fora da caixinha!', 'Duvido de primeira! 😏', 'Atenção aos detalhes...', 'Essa é nova, hein!', 'Cuidado com essa!'];
 
 function errar(el) {
+  if (sessao) return responder(false, el);
   if (terminou) return;
   somErro(); vibrar(120); errosNaFase++; seguidas = 0; mostraCombo();
   const alvo = el instanceof Element ? el : $('card');
@@ -679,6 +707,7 @@ function faiscas(x, y) {
   }
 }
 function ganhar(el) {
+  if (sessao) return responder(true, el);
   if (terminou) return; terminou = true;
   somAcerto(); vibrar([30, 40, 30]);
   const alvo = el instanceof Element ? el : $('card');
@@ -718,15 +747,221 @@ function carregar(spec) {
   $('card').classList.remove('certo');
   $('pergunta').onclick = null; $('nivel').onclick = null; $('pergunta').textContent = textoFase(fase.p);
   $('nivel').textContent = 'NÍVEL ' + nivel;
-  $('barraJogo').style.width = ((nivel - 1) % 10 * 10) + '%';
+  $('barraJogo').style.width = ((nivel - 1) % 10 * 10) + '%'; $('barraJogo').style.background = '';
   fala(nivel === 1 ? 'Oi! Eu sou a Chaminha. Aqui nada é o que parece! 🔥' : BOAS_VINDAS[Math.floor(Math.random() * BOAS_VINDAS.length)]);
   fase.monta(palco);
 }
 
+// ---------- teste de QI e treino do cérebro ----------
+// QI estimado para diversão: perguntas sorteadas por área, dificuldade de 1 a 5
+const AREAS = { logica: ['🧩', 'Lógica'], matematica: ['➗', 'Matemática'], memoria: ['🧠', 'Memória'], atencao: ['👀', 'Atenção'], linguagem: ['💬', 'Linguagem'] };
+const ANALOGIAS = [
+  ['Mão está para luva assim como pé está para…', 'Meia', ['Chapéu', 'Anel', 'Colar']],
+  ['Pássaro está para ninho assim como abelha está para…', 'Colmeia', ['Toca', 'Ninho', 'Aquário']],
+  ['Dia está para noite assim como claro está para…', 'Escuro', ['Sol', 'Lua', 'Cedo']],
+  ['Peixe está para nadar assim como pássaro está para…', 'Voar', ['Correr', 'Cantar', 'Pular']],
+  ['Livro está para ler assim como música está para…', 'Ouvir', ['Escrever', 'Ver', 'Pintar']],
+  ['Médico está para hospital assim como professor está para…', 'Escola', ['Livro', 'Aluno', 'Igreja']],
+  ['Gato está para miau assim como cachorro está para…', 'Au-au', ['Muu', 'Piu', 'Có']],
+  ['Frio está para inverno assim como calor está para…', 'Verão', ['Outono', 'Chuva', 'Neve']],
+  ['Carro está para estrada assim como barco está para…', 'Mar', ['Porto', 'Vela', 'Ponte']],
+  ['Semente está para árvore assim como ovo está para…', 'Ave', ['Ninho', 'Casca', 'Gema']],
+  ['Pincel está para pintor assim como tesoura está para…', 'Cabeleireiro', ['Médico', 'Pedreiro', 'Cantor']],
+  ['Água está para sede assim como comida está para…', 'Fome', ['Prato', 'Sono', 'Frio']],
+  ['Olho está para ver assim como nariz está para…', 'Cheirar', ['Comer', 'Ouvir', 'Falar']],
+  ['Rápido está para lento assim como alto está para…', 'Baixo', ['Grande', 'Longe', 'Forte']],
+  ['Abelha está para mel assim como vaca está para…', 'Leite', ['Lã', 'Ovo', 'Seda']],
+  ['Neve está para branco assim como carvão está para…', 'Preto', ['Quente', 'Duro', 'Fogo']],
+  ['Relógio está para hora assim como termômetro está para…', 'Temperatura', ['Peso', 'Altura', 'Distância']],
+  ['Pé está para sapato assim como cabeça está para…', 'Chapéu', ['Cabelo', 'Luva', 'Meia']],
+  ['Lápis está para escrever assim como faca está para…', 'Cortar', ['Comer', 'Cozinhar', 'Furar']],
+  ['Leão está para selva assim como camelo está para…', 'Deserto', ['Zoológico', 'Mar', 'Fazenda']],
+  ['Um está para primeiro assim como três está para…', 'Terceiro', ['Trio', 'Triplo', 'Treze']],
+  ['Página está para livro assim como tijolo está para…', 'Parede', ['Cimento', 'Pedreiro', 'Barro']],
+  ['Sol está para dia assim como lua está para…', 'Noite', ['Estrela', 'Céu', 'Mar']],
+  ['Floco está para neve assim como gota está para…', 'Chuva', ['Nuvem', 'Rio', 'Gelo']],
+  ['Fome está para comer assim como sono está para…', 'Dormir', ['Cama', 'Noite', 'Acordar']],
+  ['Ouvido está para som assim como língua está para…', 'Sabor', ['Cor', 'Cheiro', 'Dente']],
+  ['Ferro está para ímã assim como papel está para…', 'Clipe', ['Água', 'Fogo', 'Vento']],
+  ['Agulha está para costureira assim como martelo está para…', 'Marceneiro', ['Cozinheiro', 'Piloto', 'Dentista']],
+];
+const PARECIDOS = [['🐱', '🐯'], ['😀', '😃'], ['🍎', '🍅'], ['⭐', '🌟'], ['🔵', '🟣'], ['🌕', '🌝'], ['🐶', '🐕'], ['🟥', '🟧']];
+
+const QI = {
+  logica(d) {
+    let s, regra;
+    if (d === 1) { const a = sorteia(1, 15), k = sorteia(2, 6); s = [0, 1, 2, 3, 4, 5].map(i => a + i * k); regra = `Soma ${k} toda vez.`; }
+    else if (d === 2) { const a = sorteia(1, 4), m = sorteia(2, 3); s = [0, 1, 2, 3, 4, 5].map(i => a * m ** i); regra = `Multiplica por ${m} toda vez.`; }
+    else if (d === 3) { const a = sorteia(1, 5); s = [0, 1, 2, 3, 4, 5].map(i => (a + i) ** 2); regra = `São quadrados: ${a + 5} × ${a + 5} = ${(a + 5) ** 2}.`; }
+    else if (d === 4) { const a = sorteia(1, 10); s = [a]; for (let i = 1; i < 6; i++) s.push(s.at(-1) + i); regra = 'A diferença cresce: +1, +2, +3, +4, +5.'; }
+    else { const x = sorteia(1, 9), y = sorteia(15, 30), k = sorteia(2, 4); s = [x, y, x + k, y - 1, x + 2 * k, y - 2, x + 3 * k];
+      return { p: `Qual vem depois?  ${s.slice(0, 6).join(', ')}, ...`, porque: `São duas sequências misturadas: ${x}, ${x + k}, ${x + 2 * k}... (soma ${k}) e ${y}, ${y - 1}, ${y - 2}... Vem ${s[6]}.`,
+        monta(palco) { botoes(palco, opcoes(s[6], [y - 3, s[6] + 1, s[6] - 1, x + 4 * k]), String(s[6])); } }; }
+    const certa = s[5], dif = Math.abs(s[5] - s[4]) || 1;
+    return { p: `Qual vem depois?  ${s.slice(0, 5).join(', ')}, ...`, porque: `${regra} Por isso ${certa}.`,
+      monta(palco) { botoes(palco, opcoes(certa, [certa + 1, certa - 1, certa + dif, s[4] + dif - 1, certa + 2]), String(certa)); } };
+  },
+  matematica(d) {
+    let p, certa, erradas, porque;
+    if (d === 1) { const a = sorteia(2, 9), b = sorteia(2, 9), c = sorteia(2, 9); certa = a + b * c; p = `Quanto é ${a} + ${b} × ${c}?`;
+      erradas = [(a + b) * c, a + b + c, certa + 1, certa - 1]; porque = `Multiplicação primeiro: ${b} × ${c} = ${b * c}; mais ${a} = ${certa}.`; }
+    else if (d === 2) { const a = sorteia(3, 12), b = sorteia(3, 9), c = sorteia(2, Math.min(20, a * b - 2)); certa = a * b - c; p = `Quanto é ${a} × ${b} − ${c}?`;
+      erradas = [certa + 10, certa - 1, certa + 1, a * b + c, certa - 10]; porque = `${a} × ${b} = ${a * b}; menos ${c} = ${certa}.`; }
+    else if (d === 3) { const pc = um([10, 20, 25, 50, 75]), n = sorteia(2, 12) * 20; certa = n * pc / 100; p = `Quanto é ${pc}% de ${n}?`;
+      erradas = [certa * 2, certa + 5, n - certa, certa + 10]; porque = `${pc}% é ${pc} de cada 100. De ${n}, dá ${certa}.`; }
+    else if (d === 4) { const x = sorteia(2, 12), a = sorteia(2, 5), b = sorteia(1, 15); certa = x; p = `Se ${a}x + ${b} = ${a * x + b}, quanto vale x?`;
+      erradas = [x + 1, x - 1, a * x, x + 2]; porque = `${a * x + b} − ${b} = ${a * x}; dividido por ${a} dá x = ${x}.`; }
+    else { const n = sorteia(2, 10) * 24; certa = n / 6; p = `Quanto é a metade de um terço de ${n}?`;
+      erradas = [n / 3, n / 2, certa + 2, certa * 2, certa - 2]; porque = `Um terço de ${n} é ${n / 3}; a metade disso é ${certa}.`; }
+    return { p, porque, monta(palco) { botoes(palco, opcoes(certa, erradas.filter(v => v > 0 && Number.isInteger(v))), String(certa)); } };
+  },
+  memoria(d) {
+    const k = 3 + d, memo = 2000 + d * 600, todos = embaralha(Object.values(CATEGORIAS).flat()), itens = todos.slice(0, k), fora = todos[k];
+    const porPosicao = d >= 3 && R() < .5, pos = sorteia(1, k);
+    return { p: `Memorize! 👀 (${(memo / 1000).toFixed(1)} s)`, tempo: 25 + memo / 1000,
+      porque: porPosicao ? `A ordem era: ${itens.join(' ')}.` : `Os que apareceram: ${itens.join(' ')}. O ${fora} não estava lá.`,
+      monta(palco) {
+        const caixa = obj(palco, `<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;font-size:52px;max-width:300px">${itens.join(' ')}</div>`, 5, 15);
+        caixa.style.right = '5%';
+        const t = setTimeout(() => {
+          caixa.remove();
+          if (porPosicao) { $('pergunta').textContent = `Qual era o ${pos}º da fila?`;
+            botoes(palco, [itens[pos - 1], ...embaralha(itens.filter((_, i) => i !== pos - 1)).slice(0, 3)], itens[pos - 1]); }
+          else { $('pergunta').textContent = 'Qual destes NÃO apareceu?'; botoes(palco, [fora, ...embaralha(itens).slice(0, 3)], fora); }
+          palco.querySelectorAll('.opc').forEach(b => b.style.fontSize = '42px');
+        }, memo);
+        limpezas.push(() => clearTimeout(t));
+      } };
+  },
+  atencao(d) {
+    if (d <= 2 && R() < .5) { const f = GERADORES.cor(); return { ...f, porque: 'Vale a COR do botão ou a PALAVRA, conforme a pergunta. O cérebro lê antes de ver a cor: efeito Stroop!' }; }
+    const [alvo, parecido] = um(PARECIDOS), total = 10 + d * 4, n = sorteia(3, Math.min(9, total - 3));
+    const lista = embaralha([...Array(n).fill(alvo), ...Array(total - n).fill(parecido)]);
+    return { p: `Quantos ${alvo} tem aqui?`, porque: `Eram ${n} ${alvo} no meio de ${total - n} ${parecido}.`,
+      monta(palco) {
+        const caixa = obj(palco, `<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;font-size:${d > 3 ? 30 : 36}px;max-width:320px">${lista.join('')}</div>`, 2, 0);
+        caixa.style.right = '2%'; caixa.firstElementChild.style.animation = 'none';
+        botoes(palco, opcoes(n, [n + 1, n - 1, n + 2, n - 2].filter(v => v > 0)), String(n), true);
+      } };
+  },
+  linguagem(d) {
+    const x = R();
+    if (x < .5) { const [p, certa, erradas] = um(ANALOGIAS); return { id: p, p, porque: `A relação é a mesma dos dois lados: a resposta é ${certa.toLowerCase()}.`, monta(palco) { botoes(palco, [certa, ...erradas], certa); } }; }
+    if (x < .75) return GERADORES.palavra();
+    return GERADORES.intruso();
+  },
+};
+
+let sessao = null;
+function iniciarSessao(modo, area) {
+  clique();
+  const ordem = Object.keys(AREAS);
+  sessao = { modo, area, i: 0, total: modo === 'qi' ? 20 : 10, d: modo === 'qi' ? 1 : ler('nivelArea', {})[area] || 1, respostas: [],
+    // teste: 4 por área, misturadas; a dificuldade sobe de 1 a 5 ao longo do teste
+    fila: modo === 'qi' ? [0, 1, 2, 3].flatMap(() => embaralha(ordem)) : [] };
+  $('dica').style.visibility = modo === 'qi' ? 'hidden' : ''; $('desafio').style.visibility = 'hidden'; $('combo').style.display = 'none';
+  mostrar('jogo'); carregarQuestao();
+}
+function carregarQuestao() {
+  limpezas.forEach(f => f()); limpezas = [];
+  terminou = false; errosNaFase = 0; usouDica = false;
+  const s = sessao, area = s.modo === 'qi' ? s.fila[s.i] : s.area, d = s.modo === 'qi' ? 1 + Math.floor(s.i / 4) : s.d;
+  R = Math.random;
+  // tenta não repetir pergunta já vista
+  for (let t = 0; t < 15; t++) { fase = QI[area](d); const sig = fase.id || fase.p; if (!vistas.includes(sig) || t === 14) { vistas.push(sig); break; } }
+  vistas = vistas.slice(-400); guardar('vistas', vistas);
+  s.areaAtual = area; s.dAtual = d;
+  const palco = $('palco'); palco.innerHTML = ''; palco.style.background = ''; palco.onclick = null;
+  $('card').classList.remove('certo');
+  $('pergunta').onclick = null; $('nivel').onclick = null; $('pergunta').textContent = fase.p;
+  $('nivel').textContent = `${AREAS[area][0]} ${s.i + 1}/${s.total}`;
+  fala(s.i === 0 ? (s.modo === 'qi' ? 'Vamos medir esse cérebro! Responda rápido, sem medo. 🧠' : `Treino de ${AREAS[area][1]}! Bora!`) : um(['Próxima!', 'Foco! 👀', 'Essa é boa!', 'Pensa rápido!', 'Vai que dá!']));
+  fase.monta(palco);
+  // cronômetro: a barra esvazia; acabou o tempo, conta como erro
+  const limite = (fase.tempo || 25) * 1000, inicio = performance.now(); s.inicio = inicio; s.limite = limite;
+  const barra = $('barraJogo');
+  cronometro(setInterval(() => {
+    const resta = 1 - (performance.now() - inicio) / limite;
+    barra.style.width = Math.max(0, resta * 100) + '%'; barra.style.background = resta < .25 ? 'var(--vermelho)' : '';
+    if (resta <= 0) responder(false, null);
+  }, 100));
+}
+function responder(certo, el) {
+  if (terminou) return; terminou = true;
+  limpezas.forEach(f => f()); limpezas = [];
+  const s = sessao, tempo = (performance.now() - s.inicio) / 1000;
+  s.respostas.push({ area: s.areaAtual, d: s.dAtual, certo, rapido: tempo * 1000 < s.limite / 2 });
+  if (certo) { som([[660, 0, .1], [880, .08, .18]]); vibrar(30); el?.classList?.add('certo'); fala(um(['Certo! ✅', 'Isso! 🔥', 'Mandou bem!', 'Boa!'])); }
+  else {
+    somErro(); vibrar(120);
+    if (el instanceof Element) { el.classList.add('errado'); }
+    document.querySelectorAll('#palco .opc[data-certo]').forEach(b => b.classList.add('certo'));
+    fala(el ? (s.modo === 'treino' ? fase.porque : 'Não era essa... a certa está em verde.') : '⏰ Acabou o tempo!', false);
+  }
+  if (s.modo === 'treino') s.d = Math.max(1, Math.min(5, s.d + (certo ? 1 : -1)));
+  setTimeout(() => {
+    if (!sessao) return;
+    s.i++;
+    if (s.i < s.total) carregarQuestao(); else fimSessao();
+  }, certo ? 900 : s.modo === 'treino' ? 3200 : 1800);
+}
+function calcularQI(respostas) {
+  let pontos = 0, max = 0;
+  respostas.forEach(r => { max += r.d * 1.15; if (r.certo) pontos += r.d * (r.rapido ? 1.15 : 1); });
+  const qi = Math.round(70 + (pontos / max) * 78);
+  return Math.max(70, Math.min(148, qi));
+}
+function rotuloQI(qi) {
+  return qi >= 130 ? 'Genial! 🔥🔥🔥' : qi >= 115 ? 'Muito acima da média! 🔥' : qi >= 100 ? 'Acima da média! 💪' : qi >= 85 ? 'Na média. Dá pra subir! 🙂' : 'Treina comigo que melhora! 💛';
+}
+function fimSessao() {
+  const s = sessao; sessao = null;
+  $('dica').style.visibility = ''; $('desafio').style.visibility = '';
+  const porArea = {};
+  s.respostas.forEach(r => { const a = porArea[r.area] ||= { c: 0, t: 0 }; a.t++; if (r.certo) a.c++; });
+  const barras = Object.entries(porArea).map(([a, v]) => `<div class="area"><span>${AREAS[a][0]} ${AREAS[a][1]}</span><div class="barra"><b style="width:${v.c / v.t * 100}%"></b></div><span>${v.c}/${v.t}</span></div>`).join('');
+  const acertos = s.respostas.filter(r => r.certo).length;
+  somAcerto(); faiscas(innerWidth / 2, innerHeight / 3);
+  if (s.modo === 'qi') {
+    const qi = calcularQI(s.respostas), ordenadas = Object.entries(porArea).sort((a, b) => b[1].c / b[1].t - a[1].c / a[1].t);
+    const forte = ordenadas[0][0], fraca = ordenadas.at(-1)[0];
+    const melhor = Math.max(qi, ler('melhorQI', 0)); guardar('melhorQI', melhor);
+    $('resTitulo').textContent = 'Seu QI estimado';
+    $('resNumero').textContent = qi; $('resRotulo').textContent = rotuloQI(qi);
+    $('resDetalhe').innerHTML = `${acertos} de ${s.total} certas · recorde: ${melhor}<br>Ponto forte: <b>${AREAS[forte][1]}</b> · Treine: <b>${AREAS[fraca][1]}</b>`;
+    $('resTreinar').textContent = `🏋️ Treinar ${AREAS[fraca][1]}`; $('resTreinar').onclick = () => iniciarSessao('treino', fraca);
+    $('resCompartilhar').onclick = () => compartilhar(`🧠 Meu QI na Chaminha deu ${qi}! ${rotuloQI(qi)}\nPonto forte: ${AREAS[forte][1]}.\nCada teste tem perguntas diferentes. Duvido você passar de ${qi}:`);
+    fala(`Seu QI estimado deu ${qi}! ${rotuloQI(qi)}`);
+  } else {
+    const niveis = ler('nivelArea', {}); niveis[s.area] = s.d; guardar('nivelArea', niveis);
+    $('resTitulo').textContent = `Treino de ${AREAS[s.area][1]}`;
+    $('resNumero').textContent = `${acertos}/${s.total}`; $('resRotulo').textContent = acertos >= 8 ? 'Mandou muito! 🔥' : acertos >= 5 ? 'Bom treino! 💪' : 'Todo treino conta! 💛';
+    $('resDetalhe').innerHTML = `Nível de ${AREAS[s.area][1]}: <b>${s.d} de 5</b>`;
+    $('resTreinar').textContent = '🔁 Treinar de novo'; $('resTreinar').onclick = () => iniciarSessao('treino', s.area);
+    $('resCompartilhar').onclick = () => compartilhar(`🏋️ Acertei ${acertos} de ${s.total} no treino de ${AREAS[s.area][1]} da Chaminha! Duvido você:`);
+  }
+  $('resBarras').innerHTML = barras;
+  mostrar('resultado');
+}
+function abrirTreino() {
+  const niveis = ler('nivelArea', {}), g = $('listaAreas'); g.innerHTML = '';
+  Object.entries(AREAS).forEach(([a, [ic, nome]]) => {
+    const b = document.createElement('button'); b.className = 'btn areaBtn';
+    b.innerHTML = `<span style="font-size:34px">${ic}</span><span style="flex:1;text-align:left">${nome}</span><span>${'⭐'.repeat(niveis[a] || 1)}</span>`;
+    b.onclick = () => iniciarSessao('treino', a); g.appendChild(b);
+  });
+  mostrar('treino');
+}
+
 // ---------- botões ----------
-$('jogar').onclick = () => { clique(); carregar(proximaFase()); mostrar('jogo'); };
+$('jogar').onclick = () => { clique(); sessao = null; carregar(proximaFase()); mostrar('jogo'); };
+$('testeQI').onclick = () => iniciarSessao('qi');
+$('abrirTreino').onclick = () => { clique(); abrirTreino(); };
+$('voltarTreino').onclick = () => { clique(); mostrar('inicio'); };
+$('resInicio').onclick = () => { clique(); mostrar('inicio'); };
+$('resNovo').onclick = () => iniciarSessao('qi');
 $('recomecar').onclick = () => { clique(); nivel = 1; historico = []; guardar('nivel', 1); guardar('hist', []); carregar(proximaFase()); mostrar('jogo'); };
-$('abrirMapa').onclick = () => { clique(); limpezas.forEach(f => f()); limpezas = []; mostrar('inicio'); };
+$('abrirMapa').onclick = () => { clique(); limpezas.forEach(f => f()); limpezas = []; if (sessao) { sessao = null; $('dica').style.visibility = ''; $('desafio').style.visibility = ''; } mostrar('inicio'); };
 $('somInicio').onclick = () => { somLigado = !somLigado; guardar('som', somLigado); atualizaSom(); clique(); };
 $('dica').onclick = () => { clique(); usouDica = true; fala('💡 ' + textoFase(fase.dica)); };
 $('desafio').onclick = () => {
@@ -738,7 +973,7 @@ $('desafio').onclick = () => {
 $('proxima').onclick = () => { clique(); $('vitoria').style.display = 'none'; carregar(proximaFase()); };
 
 // ---------- abertura ----------
-$('logoChama').innerHTML = chaminha(150);
+$('logoChama').innerHTML = chaminha(120); $('resMascote').innerHTML = chaminha(90);
 atualizaSom(); atualizaInicio();
 for (let i = 0; i < 18; i++) {
   const b = document.createElement('i');
