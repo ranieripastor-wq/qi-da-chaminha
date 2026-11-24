@@ -26,15 +26,15 @@
   .btn { border:0; border-radius:16px; font-weight:800; cursor:pointer; background:var(--amarelo); color:var(--tinta);
     padding:8px 14px; font-size:18px; box-shadow:0 4px 0 var(--laranja); min-height:44px; min-width:44px; }
   .btn:active { transform:translateY(3px); box-shadow:0 1px 0 var(--laranja); }
-  .btn.grande { font-size:30px; padding:12px 48px; border-radius:24px; box-shadow:0 7px 0 var(--brasa); }
+  .btn.grande { font-size:30px; line-height:1.25; padding:14px 40px; border-radius:24px; box-shadow:0 7px 0 var(--brasa); }
   .btn.grande:active { box-shadow:0 2px 0 var(--brasa); transform:translateY(5px); }
   .btn.fantasma { background:transparent; color:var(--amarelo); box-shadow:none; border:3px solid var(--amarelo); }
 
   /* abertura */
-  #inicio { align-items:center; justify-content:center; gap:10px; text-align:center; }
+  #inicio { align-items:center; justify-content:center; gap:14px; text-align:center; overflow:auto; }
   #inicio h1 { color:var(--amarelo); font-size:46px; line-height:.95; margin:8px 0 0; text-shadow:0 4px 0 var(--brasa); }
   #inicio h1 small { display:block; font-size:24px; color:#FFE3A8; text-shadow:none; font-weight:600; }
-  #inicio p { color:#FFE3A8; margin:0 0 14px; font-size:18px; }
+  #inicio p { color:#FFE3A8; margin:0 0 6px; font-size:18px; }
   .flutua { animation:flutua 2.4s ease-in-out infinite; }
   @keyframes flutua { 50% { transform:translateY(-12px) rotate(-3deg); } }
   .brasas { position:fixed; inset:0; pointer-events:none; overflow:hidden; }
@@ -604,7 +604,8 @@ function proximaFase() {
 function mostrar(id) { document.querySelectorAll('.tela').forEach(t => t.classList.toggle('ativa', t.id === id)); if (id === 'inicio') atualizaInicio(); }
 function atualizaInicio() {
   $('recordeInicio').textContent = recorde ? `🏆 Recorde: nível ${recorde}  ·  ⭐ ${estrelasTotal}` : 'Cada partida é diferente!';
-  $('jogar').textContent = nivel > 1 ? `CONTINUAR (nível ${nivel})` : 'JOGAR';
+  $('jogar').textContent = nivel > 1 ? `😜 Pegadinhas (nível ${nivel})` : '😜 Pegadinhas';
+  const q = ler('melhorQI', 0); $('testeQI').textContent = q ? `🧠 TESTE DE QI (recorde ${q})` : '🧠 TESTE DE QI';
 }
 
 // ---------- peças das fases ----------
