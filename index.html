@@ -747,7 +747,7 @@ async function rankingDepois(qi) {
   const d = await buscarRanking(), lista = d?.semanal || [], pos = r.posSemana;
   const meuMelhor = pos ? lista[pos - 1]?.qi : null, frente = pos > 1 ? lista[pos - 2] : null;
   ultimaPos = pos;
-  el.innerHTML = pos ? `${posTexto(pos)} da semana no Brasil<br><span style="font-size:15px;font-weight:700">${r.jogadores} pessoas no ranking geral · você é o ${r.posGeral || '-'}º`
+  el.innerHTML = pos ? `${posTexto(pos)} da semana no Brasil<br><span style="font-size:15px;font-weight:700">${r.jogadores} pessoa${r.jogadores > 1 ? "s" : ""} no ranking geral · você é o ${r.posGeral || '-'}º`
     + (frente ? `<br>Passe ${esc(frente.nome)} (QI ${frente.qi}) para subir!` : pos === 1 ? '<br>Você está no topo! Segure a coroa 👑' : '') + '</span>'
     : 'Seu recorde da semana já é maior. Continue tentando!';
   if (meuMelhor && meuMelhor > qi) el.innerHTML += `<br><span style="font-size:15px">Seu recorde na semana: ${meuMelhor}</span>`;
@@ -1140,7 +1140,7 @@ function fimSessao() {
     $('resDetalhe').innerHTML = `${acertos} de ${s.total} certas · recorde: ${melhor}<br>Melhor que <b>${percentil(qi)}%</b> das pessoas`
       + (s.area ? '' : `<br>Ponto forte: <b>${AREAS[forte][1]}</b> · Treine: <b>${AREAS[fraca][1]}</b>`)
       + (novaMeta ? `<br>🏅 <b>Medalha nova: QI ${novaMeta}!</b>` : '')
-      + (acima ? `<br>Próximo no ranking: ${acima[0]} (${acima[1]})` : '') + xpTexto;
+      + (acima ? `<br>Próximo famoso: ${acima[0]} (${acima[1]})` : '') + xpTexto;
     $('resNovo').onclick = () => iniciarSessao('qi', s.area);
     $('resTreinar').textContent = `🏋️ Treinar ${AREAS[fraca][1]}`; $('resTreinar').onclick = () => iniciarSessao('treino', fraca);
     $('resCompartilhar').onclick = () => compartilhar(`🧠 Meu QI na Chaminha deu ${qi}! ${rotuloQI(qi)}` + (ultimaPos ? `\n🏆 Estou em ${ultimaPos}º no ranking da semana.` : '')
