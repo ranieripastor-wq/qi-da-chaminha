@@ -31,7 +31,7 @@
   .btn.fantasma { background:transparent; color:var(--amarelo); box-shadow:none; border:3px solid var(--amarelo); }
 
   /* abertura */
-  #inicio { align-items:center; justify-content:center; gap:14px; text-align:center; overflow:auto; }
+  #inicio { align-items:center; justify-content:safe center; gap:12px; text-align:center; overflow:auto; }
   #inicio h1 { color:var(--amarelo); font-size:46px; line-height:.95; margin:8px 0 0; text-shadow:0 4px 0 var(--brasa); }
   #inicio h1 small { display:block; font-size:24px; color:#FFE3A8; text-shadow:none; font-weight:600; }
   #inicio p { color:#FFE3A8; margin:0 0 6px; font-size:18px; }
@@ -119,6 +119,13 @@
   @keyframes cai { to { transform:translateY(260px) rotate(200deg); } }
   .area { display:flex; align-items:center; gap:8px; color:#FFE3A8; font-weight:700; font-size:16px; }
   .area > span:first-child { width:130px; text-align:left; } .area .barra { flex:1; margin:0; height:12px; }
+  .cartaoNivel { width:100%; max-width:360px; background:#3A1E10; border-radius:16px; padding:10px 14px; color:#FFE3A8; font-weight:700; text-align:left; }
+  .cartaoNivel .barra { height:10px; margin-top:6px; }
+  .medalhas { display:flex; gap:6px; justify-content:center; font-size:15px; flex-wrap:wrap; }
+  .medalhas span { background:#3A1E10; border-radius:12px; padding:4px 8px; opacity:.45; color:#FFE3A8; font-weight:700; }
+  .medalhas span.ok { opacity:1; background:var(--brasa); color:#fff; }
+  .linhaRank { display:flex; gap:10px; align-items:center; background:#3A1E10; border-radius:12px; padding:8px 12px; color:#FFE3A8; font-weight:700; }
+  .linhaRank b { width:34px; color:var(--amarelo); } .linhaRank span { flex:1; } .linhaRank.voce { background:var(--brasa); color:#fff; }
   .areaBtn { display:flex; align-items:center; gap:12px; font-size:24px; padding:12px 18px; width:100%; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
   @media (max-height:700px) { #pergunta { font-size:21px; min-height:52px; } #fala { min-height:70px; } }
@@ -129,14 +136,17 @@
 
 <section class="tela ativa" id="inicio">
   <div class="flutua" id="logoChama"></div>
-  <h1 style="font-size:72px">QI<small>da Chaminha</small></h1>
+  <h1 style="font-size:60px">QI<small>da Chaminha</small></h1>
   <p>Teste de QI e treino do cérebro 🧠<br>Nenhuma partida é igual!</p>
   <button class="btn grande" id="testeQI">🧠 TESTE DE QI</button>
+  <button class="btn" id="testeLogica" style="font-size:22px;padding:10px 24px">🧩 Teste de lógica</button>
   <button class="btn" id="abrirTreino" style="font-size:22px;padding:10px 24px">🏋️ Treino do cérebro</button>
   <button class="btn" id="jogar" style="font-size:20px;padding:8px 22px">😜 Pegadinhas</button>
+  <button class="btn" id="abrirRanking" style="font-size:20px;padding:8px 22px">🏆 Níveis e ranking</button>
+  <div class="cartaoNivel" id="cartaoNivel"></div>
   <div id="recordeInicio" style="color:#FFE3A8;font-size:18px;font-weight:700"></div>
-  <button class="btn fantasma" id="recomecar" style="font-size:15px">Recomeçar pegadinhas do nível 1</button>
-  <button class="btn fantasma" id="somInicio" aria-label="Ligar ou desligar o som">🔊 Som</button>
+  <span style="display:flex;gap:8px"><button class="btn fantasma" id="recomecar" style="font-size:14px">Recomeçar pegadinhas</button>
+  <button class="btn fantasma" id="somInicio" aria-label="Ligar ou desligar o som">🔊 Som</button></span>
 </section>
 
 
@@ -150,7 +160,22 @@
   <div id="listaAreas" style="display:flex;flex-direction:column;gap:12px"></div>
 </section>
 
-<section class="tela" id="resultado" style="align-items:center;text-align:center;gap:8px;overflow:auto">
+<section class="tela" id="ranking" style="overflow:auto">
+  <header style="display:flex;align-items:center;gap:10px;color:var(--amarelo)">
+    <button class="btn" id="voltarRanking" aria-label="Voltar para o início">◀</button>
+    <h2 style="margin:0;font-size:26px">Níveis e ranking</h2>
+  </header>
+  <div class="cartaoNivel" id="rankNivel" style="max-width:none;margin:10px 0"></div>
+  <p style="color:#FFE3A8;margin:6px 0">Metas de QI (seu recorde liga a medalha):</p>
+  <div class="medalhas" id="rankMetas"></div>
+  <p style="color:#FFE3A8;margin:14px 0 6px">Você no ranking dos famosos:</p>
+  <div id="rankFamosos" style="display:flex;flex-direction:column;gap:6px"></div>
+  <small style="color:#B89878;display:block;margin:8px 0">QI dos famosos: estimativas populares feitas por historiadores e pela internet. Nenhum deles fez um teste de QI moderno.</small>
+  <p style="color:#FFE3A8;margin:14px 0 6px">Seus melhores testes:</p>
+  <div id="rankMeus" style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px"></div>
+</section>
+
+<section class="tela" id="resultado" style="align-items:center;justify-content:safe center;text-align:center;gap:8px;overflow:auto">
   <div class="flutua" id="resMascote"></div>
   <div id="resTitulo" style="color:#FFE3A8;font-size:20px;font-weight:700"></div>
   <div id="resNumero" style="color:var(--amarelo);font-size:84px;font-weight:800;line-height:1;text-shadow:0 5px 0 var(--brasa)"></div>
@@ -602,8 +627,43 @@ function proximaFase() {
 
 // ---------- telas ----------
 function mostrar(id) { document.querySelectorAll('.tela').forEach(t => t.classList.toggle('ativa', t.id === id)); if (id === 'inicio') atualizaInicio(); }
+// ---------- níveis, metas e ranking ----------
+const NIVEIS = [[0, 'Faísca', '✨'], [100, 'Brasinha', '🔸'], [300, 'Chaminha', '🔥'], [700, 'Fogueira', '🏕️'], [1500, 'Tocha', '🔦'],
+  [3000, 'Labareda', '🌋'], [6000, 'Vulcão', '💥'], [12000, 'Sol', '☀️'], [25000, 'Supernova', '🌟']];
+const METAS_QI = [100, 110, 120, 130, 140];
+// estimativas populares (nunca medidas); o aviso aparece na tela
+const FAMOSOS = [['Isaac Newton', 190], ['Leonardo da Vinci', 180], ['Galileu Galilei', 180], ['Charles Darwin', 165], ['Mozart', 165],
+  ['Albert Einstein', 160], ['Nikola Tesla', 160], ['Benjamin Franklin', 160], ['Napoleão', 145], ['Abraham Lincoln', 140], ['Média das pessoas', 100]];
+function nivelDe(xp) {
+  let i = 0; while (i + 1 < NIVEIS.length && xp >= NIVEIS[i + 1][0]) i++;
+  const prox = NIVEIS[i + 1];
+  return { n: i + 1, nome: NIVEIS[i][1], ic: NIVEIS[i][2], falta: prox ? prox[0] - xp : 0, pct: prox ? (xp - NIVEIS[i][0]) / (prox[0] - NIVEIS[i][0]) * 100 : 100, prox };
+}
+function htmlNivel() {
+  const xp = ler('xp', 0), v = nivelDe(xp);
+  return `${v.ic} Nível ${v.n} · ${v.nome} <span style="float:right">${xp} XP</span><div class="barra"><b style="width:${v.pct}%"></b></div>
+    <small>${v.prox ? `Faltam ${v.falta} XP para ${v.prox[2]} ${v.prox[1]}` : 'Nível máximo!'}</small>`;
+}
+// quantos % das pessoas ficam abaixo (QI tem média 100 e desvio 15)
+function percentil(qi) {
+  const z = (qi - 100) / 15 / Math.SQRT2, t = 1 / (1 + .3275911 * Math.abs(z));
+  const erf = 1 - t * (.254829592 + t * (-.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * Math.exp(-z * z);
+  return Math.round(50 * (1 + Math.sign(z) * erf));
+}
+function abrirRanking() {
+  const q = ler('melhorQI', 0);
+  $('rankNivel').innerHTML = htmlNivel();
+  $('rankMetas').innerHTML = METAS_QI.map(m => `<span class="${q >= m ? 'ok' : ''}">${q >= m ? '🏅' : '🔒'} QI ${m}</span>`).join('');
+  const lista = [...FAMOSOS.map(([n, v]) => ({ n, v })), ...(q ? [{ n: 'VOCÊ', v: q, voce: true }] : [])].sort((a, b) => b.v - a.v || (b.voce ? 1 : 0) - (a.voce ? 1 : 0));
+  $('rankFamosos').innerHTML = lista.map((x, i) => `<div class="linhaRank${x.voce ? ' voce' : ''}"><b>${i + 1}º</b><span>${x.voce ? '🔥 ' : ''}${x.n}</span>${x.v}</div>`).join('')
+    + (q ? '' : '<p style="color:#FFE3A8">Faça o teste de QI para entrar no ranking!</p>');
+  const meus = ler('testes', []);
+  $('rankMeus').innerHTML = meus.length ? meus.map((x, i) => `<div class="linhaRank"><b>${i + 1}º</b><span>${x.tipo} · ${x.data}</span>${x.qi}</div>`).join('') : '<p style="color:#FFE3A8">Nenhum teste ainda.</p>';
+  mostrar('ranking');
+}
 function atualizaInicio() {
-  $('recordeInicio').textContent = recorde ? `🏆 Recorde: nível ${recorde}  ·  ⭐ ${estrelasTotal}` : 'Cada partida é diferente!';
+  $('cartaoNivel').innerHTML = htmlNivel();
+  $('recordeInicio').textContent = recorde ? `🏆 Recorde: nível ${recorde}  ·  ⭐ ${estrelasTotal}` : '';
   $('jogar').textContent = nivel > 1 ? `😜 Pegadinhas (nível ${nivel})` : '😜 Pegadinhas';
   const q = ler('melhorQI', 0); $('testeQI').textContent = q ? `🧠 TESTE DE QI (recorde ${q})` : '🧠 TESTE DE QI';
 }
@@ -859,7 +919,7 @@ function iniciarSessao(modo, area) {
   const ordem = Object.keys(AREAS);
   sessao = { modo, area, i: 0, total: modo === 'qi' ? 20 : 10, d: modo === 'qi' ? 1 : ler('nivelArea', {})[area] || 1, respostas: [],
     // teste: 4 por área, misturadas; a dificuldade sobe de 1 a 5 ao longo do teste
-    fila: modo === 'qi' ? [0, 1, 2, 3].flatMap(() => embaralha(ordem)) : [] };
+    fila: modo !== 'qi' ? [] : area ? Array(20).fill(area) : [0, 1, 2, 3].flatMap(() => embaralha(ordem)) };
   $('dica').style.visibility = modo === 'qi' ? 'hidden' : ''; $('desafio').style.visibility = 'hidden'; $('combo').style.display = 'none';
   mostrar('jogo'); carregarQuestao();
 }
@@ -923,13 +983,27 @@ function fimSessao() {
   const barras = Object.entries(porArea).map(([a, v]) => `<div class="area"><span>${AREAS[a][0]} ${AREAS[a][1]}</span><div class="barra"><b style="width:${v.c / v.t * 100}%"></b></div><span>${v.c}/${v.t}</span></div>`).join('');
   const acertos = s.respostas.filter(r => r.certo).length;
   somAcerto(); faiscas(innerWidth / 2, innerHeight / 3);
+  // XP: 10 por ponto de dificuldade de cada acerto; avisa quando sobe de nível
+  const xpAntes = ler('xp', 0), ganho = s.respostas.reduce((a, r) => a + (r.certo ? 10 * r.d : 0), 0);
+  guardar('xp', xpAntes + ganho);
+  const nA = nivelDe(xpAntes), nD = nivelDe(xpAntes + ganho);
+  const xpTexto = `<br>+${ganho} XP · ${nD.ic} Nível ${nD.n} ${nD.nome}` + (nD.n > nA.n ? ' <b>SUBIU DE NÍVEL! 🎉</b>' : '');
   if (s.modo === 'qi') {
     const qi = calcularQI(s.respostas), ordenadas = Object.entries(porArea).sort((a, b) => b[1].c / b[1].t - a[1].c / a[1].t);
     const forte = ordenadas[0][0], fraca = ordenadas.at(-1)[0];
-    const melhor = Math.max(qi, ler('melhorQI', 0)); guardar('melhorQI', melhor);
-    $('resTitulo').textContent = 'Seu QI estimado';
+    const antes = ler('melhorQI', 0), melhor = Math.max(qi, antes); guardar('melhorQI', melhor);
+    const tipo = s.area ? 'Lógica' : 'QI completo';
+    const testes = [...ler('testes', []), { qi, tipo, data: new Date().toLocaleDateString('pt-BR') }].sort((a, b) => b.qi - a.qi).slice(0, 10);
+    guardar('testes', testes);
+    const novaMeta = METAS_QI.filter(m => qi >= m && antes < m).pop();
+    const acima = FAMOSOS.filter(([, v]) => v > qi).at(-1);
+    $('resTitulo').textContent = s.area ? 'Seu QI de lógica' : 'Seu QI estimado';
     $('resNumero').textContent = qi; $('resRotulo').textContent = rotuloQI(qi);
-    $('resDetalhe').innerHTML = `${acertos} de ${s.total} certas · recorde: ${melhor}<br>Ponto forte: <b>${AREAS[forte][1]}</b> · Treine: <b>${AREAS[fraca][1]}</b>`;
+    $('resDetalhe').innerHTML = `${acertos} de ${s.total} certas · recorde: ${melhor}<br>Melhor que <b>${percentil(qi)}%</b> das pessoas`
+      + (s.area ? '' : `<br>Ponto forte: <b>${AREAS[forte][1]}</b> · Treine: <b>${AREAS[fraca][1]}</b>`)
+      + (novaMeta ? `<br>🏅 <b>Medalha nova: QI ${novaMeta}!</b>` : '')
+      + (acima ? `<br>Próximo no ranking: ${acima[0]} (${acima[1]})` : '') + xpTexto;
+    $('resNovo').onclick = () => iniciarSessao('qi', s.area);
     $('resTreinar').textContent = `🏋️ Treinar ${AREAS[fraca][1]}`; $('resTreinar').onclick = () => iniciarSessao('treino', fraca);
     $('resCompartilhar').onclick = () => compartilhar(`🧠 Meu QI na Chaminha deu ${qi}! ${rotuloQI(qi)}\nPonto forte: ${AREAS[forte][1]}.\nCada teste tem perguntas diferentes. Duvido você passar de ${qi}:`);
     fala(`Seu QI estimado deu ${qi}! ${rotuloQI(qi)}`);
@@ -937,7 +1011,7 @@ function fimSessao() {
     const niveis = ler('nivelArea', {}); niveis[s.area] = s.d; guardar('nivelArea', niveis);
     $('resTitulo').textContent = `Treino de ${AREAS[s.area][1]}`;
     $('resNumero').textContent = `${acertos}/${s.total}`; $('resRotulo').textContent = acertos >= 8 ? 'Mandou muito! 🔥' : acertos >= 5 ? 'Bom treino! 💪' : 'Todo treino conta! 💛';
-    $('resDetalhe').innerHTML = `Nível de ${AREAS[s.area][1]}: <b>${s.d} de 5</b>`;
+    $('resDetalhe').innerHTML = `Nível de ${AREAS[s.area][1]}: <b>${s.d} de 5</b>` + xpTexto;
     $('resTreinar').textContent = '🔁 Treinar de novo'; $('resTreinar').onclick = () => iniciarSessao('treino', s.area);
     $('resCompartilhar').onclick = () => compartilhar(`🏋️ Acertei ${acertos} de ${s.total} no treino de ${AREAS[s.area][1]} da Chaminha! Duvido você:`);
   }
@@ -957,6 +1031,9 @@ function abrirTreino() {
 // ---------- botões ----------
 $('jogar').onclick = () => { clique(); sessao = null; carregar(proximaFase()); mostrar('jogo'); };
 $('testeQI').onclick = () => iniciarSessao('qi');
+$('testeLogica').onclick = () => iniciarSessao('qi', 'logica');
+$('abrirRanking').onclick = () => { clique(); abrirRanking(); };
+$('voltarRanking').onclick = () => { clique(); mostrar('inicio'); };
 $('abrirTreino').onclick = () => { clique(); abrirTreino(); };
 $('voltarTreino').onclick = () => { clique(); mostrar('inicio'); };
 $('resInicio').onclick = () => { clique(); mostrar('inicio'); };
