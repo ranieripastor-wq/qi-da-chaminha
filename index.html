@@ -31,7 +31,8 @@
   .btn.fantasma { background:transparent; color:var(--amarelo); box-shadow:none; border:3px solid var(--amarelo); }
 
   /* abertura */
-  #inicio { align-items:center; justify-content:safe center; gap:12px; text-align:center; overflow:auto; }
+  #inicio > *, #resultado > *, #ranking > * { flex-shrink:0; }
+  #inicio { align-items:center; justify-content:safe center; gap:10px; text-align:center; overflow:auto; }
   #inicio h1 { color:var(--amarelo); font-size:46px; line-height:.95; margin:8px 0 0; text-shadow:0 4px 0 var(--brasa); }
   #inicio h1 small { display:block; font-size:24px; color:#FFE3A8; text-shadow:none; font-weight:600; }
   #inicio p { color:#FFE3A8; margin:0 0 6px; font-size:18px; }
@@ -126,6 +127,32 @@
   .medalhas span.ok { opacity:1; background:var(--brasa); color:#fff; }
   .linhaRank { display:flex; gap:10px; align-items:center; background:#3A1E10; border-radius:12px; padding:8px 12px; color:#FFE3A8; font-weight:700; }
   .linhaRank b { width:34px; color:var(--amarelo); } .linhaRank span { flex:1; } .linhaRank.voce { background:var(--brasa); color:#fff; }
+  input { user-select:text; -webkit-user-select:text; font-family:inherit; }
+  .topo { width:100%; display:flex; justify-content:space-between; align-items:center; }
+  .pilula { background:#3A1E10; color:#FFE3A8; border-radius:999px; padding:4px 12px; font-weight:800; font-size:16px; }
+  .btn.grande small { display:block; font-size:15px; font-weight:700; opacity:.75; }
+  .menu { width:100%; max-width:380px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tile { display:flex; flex-direction:column; align-items:center; gap:0; padding:10px 6px; font-size:19px; line-height:1.1; border-radius:18px; }
+  .tile i { font-style:normal; font-size:30px; } .tile small { font-size:13px; font-weight:700; opacity:.7; }
+  .teaser { width:100%; max-width:380px; background:linear-gradient(135deg,#4A2414,#3A1E10); border:2px solid var(--amarelo); border-radius:18px;
+    padding:10px 14px; color:#FFE3A8; text-align:left; cursor:pointer; font-family:inherit; font-size:16px; font-weight:700; }
+  .teaser b { color:var(--amarelo); font-size:18px; } .teaser .top3 { display:flex; gap:10px; margin-top:4px; white-space:nowrap; overflow:hidden; }
+  .abas { display:flex; gap:6px; margin:10px 0; } .abas button { flex:1; font-size:17px; }
+  .abas button[aria-selected="false"] { background:#3A1E10; color:#FFE3A8; box-shadow:none; }
+  .podio { display:grid; grid-template-columns:1fr 1.15fr 1fr; align-items:end; gap:6px; margin:6px 0 10px; text-align:center; }
+  .podio div { border-radius:16px 16px 6px 6px; padding:8px 4px; color:var(--tinta); font-weight:800; overflow:hidden; }
+  .podio div span { display:block; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .podio div em { font-style:normal; font-size:26px; display:block; line-height:1; }
+  .podio .p1 { background:var(--amarelo); min-height:120px; } .podio .p2 { background:#E6E1D8; min-height:96px; } .podio .p3 { background:#E0A46A; min-height:80px; }
+  .podio .voce { outline:4px solid var(--brasa); }
+  .posicao { background:var(--brasa); color:#fff; border-radius:16px; padding:8px 14px; font-weight:800; font-size:19px; line-height:1.25; animation:pop .4s; }
+  .posicao:empty { display:none; }
+  .modal { position:fixed; inset:0; background:rgba(43,20,8,.9); display:none; align-items:center; justify-content:center; z-index:7; padding:20px; }
+  .modal .caixa { background:var(--papel); border-radius:28px; padding:20px; max-width:380px; width:100%; text-align:center; display:flex; flex-direction:column; gap:10px;
+    box-shadow:0 8px 0 var(--brasa); animation:pop .4s cubic-bezier(.3,1.6,.5,1); }
+  .modal h2 { margin:0; color:var(--brasa); font-size:28px; }
+  .modal input { font-size:22px; padding:10px 14px; border-radius:14px; border:3px solid var(--tinta); text-align:center; font-weight:800; color:var(--tinta); }
+  h3.secao { color:var(--amarelo); margin:18px 0 6px; font-size:20px; }
   .areaBtn { display:flex; align-items:center; gap:12px; font-size:24px; padding:12px 18px; width:100%; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
   @media (max-height:700px) { #pergunta { font-size:21px; min-height:52px; } #fala { min-height:70px; } }
@@ -135,18 +162,21 @@
 <div class="brasas" id="brasas" aria-hidden="true"></div>
 
 <section class="tela ativa" id="inicio">
-  <div class="flutua" id="logoChama"></div>
-  <h1 style="font-size:60px">QI<small>da Chaminha</small></h1>
-  <p>Teste de QI e treino do cérebro 🧠<br>Nenhuma partida é igual!</p>
-  <button class="btn grande" id="testeQI">🧠 TESTE DE QI</button>
-  <button class="btn" id="testeLogica" style="font-size:22px;padding:10px 24px">🧩 Teste de lógica</button>
-  <button class="btn" id="abrirTreino" style="font-size:22px;padding:10px 24px">🏋️ Treino do cérebro</button>
-  <button class="btn" id="jogar" style="font-size:20px;padding:8px 22px">😜 Pegadinhas</button>
-  <button class="btn" id="abrirRanking" style="font-size:20px;padding:8px 22px">🏆 Níveis e ranking</button>
+  <div class="topo"><span class="pilula" id="sequencia"></span><button class="btn fantasma" id="somInicio" aria-label="Ligar ou desligar o som">🔊</button></div>
+  <div style="display:flex;align-items:center;gap:12px"><div class="flutua" id="logoChama"></div>
+  <h1 style="font-size:54px;text-align:left;margin:0">QI<small>da Chaminha</small></h1></div>
+  <p style="font-size:16px">Descubra seu QI e dispute com todo o Brasil</p>
+  <button class="btn grande" id="testeQI">🧠 TESTE DE QI<small>20 perguntas · uns 7 minutos</small></button>
+  <button class="teaser" id="teaser"></button>
+  <div class="menu">
+    <button class="btn tile" id="testeLogica"><i>🧩</i>Lógica<small>teste de 20</small></button>
+    <button class="btn tile" id="abrirTreino"><i>🏋️</i>Treino<small>5 áreas do cérebro</small></button>
+    <button class="btn tile" id="jogar"><i>😜</i>Pegadinhas<small id="subPegadinha">sem fim</small></button>
+    <button class="btn tile" id="abrirRanking"><i>🏆</i>Ranking<small>semana e geral</small></button>
+  </div>
   <div class="cartaoNivel" id="cartaoNivel"></div>
-  <div id="recordeInicio" style="color:#FFE3A8;font-size:18px;font-weight:700"></div>
-  <span style="display:flex;gap:8px"><button class="btn fantasma" id="recomecar" style="font-size:14px">Recomeçar pegadinhas</button>
-  <button class="btn fantasma" id="somInicio" aria-label="Ligar ou desligar o som">🔊 Som</button></span>
+  <div id="recordeInicio" style="color:#FFE3A8;font-size:15px;font-weight:700"></div>
+  <button class="btn fantasma" id="recomecar" style="font-size:13px;min-height:36px;border-width:2px">Recomeçar pegadinhas do nível 1</button>
 </section>
 
 
@@ -163,26 +193,47 @@
 <section class="tela" id="ranking" style="overflow:auto">
   <header style="display:flex;align-items:center;gap:10px;color:var(--amarelo)">
     <button class="btn" id="voltarRanking" aria-label="Voltar para o início">◀</button>
-    <h2 style="margin:0;font-size:26px">Níveis e ranking</h2>
+    <h2 style="margin:0;font-size:26px;flex:1">Ranking</h2>
+    <button class="btn fantasma" id="trocarNome" style="font-size:14px;border-width:2px;min-height:36px">✏️ Apelido</button>
   </header>
-  <div class="cartaoNivel" id="rankNivel" style="max-width:none;margin:10px 0"></div>
-  <p style="color:#FFE3A8;margin:6px 0">Metas de QI (seu recorde liga a medalha):</p>
-  <div class="medalhas" id="rankMetas"></div>
-  <p style="color:#FFE3A8;margin:14px 0 6px">Você no ranking dos famosos:</p>
+  <div class="abas" role="tablist">
+    <button class="btn" role="tab" data-aba="semanal" aria-selected="true">Semana</button>
+    <button class="btn" role="tab" data-aba="geral" aria-selected="false">Geral</button>
+    <button class="btn" role="tab" data-aba="famosos" aria-selected="false">Famosos</button>
+  </div>
+  <div id="rankInfo" style="color:#FFE3A8;font-weight:700;margin-bottom:6px"></div>
+  <div class="podio" id="rankPodio"></div>
   <div id="rankFamosos" style="display:flex;flex-direction:column;gap:6px"></div>
-  <small style="color:#B89878;display:block;margin:8px 0">QI dos famosos: estimativas populares feitas por historiadores e pela internet. Nenhum deles fez um teste de QI moderno.</small>
-  <p style="color:#FFE3A8;margin:14px 0 6px">Seus melhores testes:</p>
+  <small id="avisoFamosos" style="color:#B89878;display:none;margin:8px 0">QI dos famosos: estimativas populares feitas por historiadores e pela internet. Nenhum deles fez um teste de QI moderno.</small>
+  <button class="btn grande" id="rankJogar" style="margin:14px auto 0;font-size:22px;padding:10px 26px">🧠 Fazer teste e subir</button>
+  <h3 class="secao">Seu progresso</h3>
+  <div class="cartaoNivel" id="rankNivel" style="max-width:none;margin-bottom:10px"></div>
+  <div class="medalhas" id="rankMetas"></div>
+  <h3 class="secao">Seus melhores testes</h3>
   <div id="rankMeus" style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px"></div>
 </section>
+
+<div class="modal" id="nomeModal" role="dialog" aria-modal="true" aria-labelledby="nomeTitulo">
+  <div class="caixa">
+    <h2 id="nomeTitulo">Entre no ranking! 🏆</h2>
+    <p style="margin:0;font-size:18px" id="nomeTexto">Como você quer aparecer para o Brasil?</p>
+    <input id="nomeInput" maxlength="16" placeholder="Seu apelido" autocomplete="nickname" enterkeyhint="done">
+    <small style="color:#8A5A3A">Use um apelido, não o nome completo. Todo mundo vai ver.</small>
+    <small id="nomeErro" style="color:var(--vermelho);font-weight:800"></small>
+    <button class="btn grande" id="nomeOk" style="font-size:24px">Entrar no ranking</button>
+    <button class="btn fantasma" id="nomeNao" style="color:var(--tinta);border-color:var(--tinta)">Agora não</button>
+  </div>
+</div>
 
 <section class="tela" id="resultado" style="align-items:center;justify-content:safe center;text-align:center;gap:8px;overflow:auto">
   <div class="flutua" id="resMascote"></div>
   <div id="resTitulo" style="color:#FFE3A8;font-size:20px;font-weight:700"></div>
   <div id="resNumero" style="color:var(--amarelo);font-size:84px;font-weight:800;line-height:1;text-shadow:0 5px 0 var(--brasa)"></div>
   <div id="resRotulo" style="color:#fff;font-size:22px;font-weight:800"></div>
+  <div class="posicao" id="resPosicao"></div>
+  <button class="btn grande" id="resCompartilhar" style="font-size:22px;padding:10px 26px">📲 Desafiar amigos</button>
   <div id="resDetalhe" style="color:#FFE3A8;font-size:17px"></div>
   <div id="resBarras" style="width:100%;display:flex;flex-direction:column;gap:6px;margin:6px 0"></div>
-  <button class="btn grande" id="resCompartilhar" style="font-size:22px;padding:10px 26px">📲 Desafiar amigos</button>
   <button class="btn" id="resTreinar"></button>
   <span style="display:flex;gap:8px"><button class="btn fantasma" id="resNovo">Novo teste</button><button class="btn fantasma" id="resInicio">Início</button></span>
   <small style="color:#B89878;max-width:340px">QI estimado para diversão e treino. Não substitui um teste feito por psicólogo.</small>
@@ -650,22 +701,107 @@ function percentil(qi) {
   const erf = 1 - t * (.254829592 + t * (-.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * Math.exp(-z * z);
   return Math.round(50 * (1 + Math.sign(z) * erf));
 }
+const API = 'https://qi-chaminha-ranking.vercel.app/api/ranking';
+function meuId() { let id = ler('id', ''); if (!id) { id = (Math.random().toString(36).slice(2) + Date.now().toString(36)).slice(0, 20); guardar('id', id); } return id; }
+let rankDados = ler('rankCache', null), abaRank = 'semanal';
+async function buscarRanking() {
+  try {
+    const r = await fetch(API + '?id=' + meuId(), { cache: 'no-store' });
+    if (r.ok) { rankDados = await r.json(); guardar('rankCache', rankDados); }
+  } catch {}
+  return rankDados;
+}
+async function enviarRanking(qi) {
+  try {
+    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: meuId(), nome: ler('apelido', ''), qi }) });
+    return r.ok ? await r.json() : { erro: (await r.json().catch(() => ({}))).erro || 'servidor' };
+  } catch { return { erro: 'rede' }; }
+}
+// pergunta o apelido; resolve com o nome ou null se a pessoa pular
+function pedirApelido(texto) {
+  return new Promise(ok => {
+    $('nomeTexto').textContent = texto || 'Como você quer aparecer para o Brasil?';
+    $('nomeInput').value = ler('apelido', ''); $('nomeErro').textContent = '';
+    $('nomeModal').style.display = 'flex'; setTimeout(() => $('nomeInput').focus(), 300);
+    const fim = v => { $('nomeModal').style.display = 'none'; ok(v); };
+    $('nomeOk').onclick = () => {
+      const n = $('nomeInput').value.replace(/\s+/g, ' ').trim();
+      if (n.length < 2) { $('nomeErro').textContent = 'Escreva pelo menos 2 letras.'; return; }
+      clique(); guardar('apelido', n); fim(n);
+    };
+    $('nomeInput').onkeydown = e => { if (e.key === 'Enter') $('nomeOk').click(); };
+    $('nomeNao').onclick = () => { clique(); fim(null); };
+  });
+}
+const posTexto = (pos, total) => pos === 1 ? '🥇 1º lugar' : pos === 2 ? '🥈 2º lugar' : pos === 3 ? '🥉 3º lugar' : `${pos}º lugar`;
+async function rankingDepois(qi) {
+  const el = $('resPosicao'); el.textContent = '';
+  if (!ler('apelido', '') && !(await pedirApelido('Seu QI deu ' + qi + '! Como você quer aparecer no ranking do Brasil?'))) {
+    el.innerHTML = '<span style="font-size:16px">Você ficou fora do ranking. Toque em 🏆 Ranking para entrar.</span>'; return;
+  }
+  el.textContent = 'Enviando para o ranking...';
+  let r = await enviarRanking(qi);
+  if (r.erro === 'nome' && await pedirApelido('Esse apelido não pode. Escolha outro:')) r = await enviarRanking(qi);
+  if (r.erro) { el.textContent = r.erro === 'rede' ? 'Sem internet: o ranking atualiza no próximo teste.' : 'Não deu para entrar no ranking agora.'; return; }
+  const d = await buscarRanking(), lista = d?.semanal || [], pos = r.posSemana;
+  const meuMelhor = pos ? lista[pos - 1]?.qi : null, frente = pos > 1 ? lista[pos - 2] : null;
+  ultimaPos = pos;
+  el.innerHTML = pos ? `${posTexto(pos)} da semana no Brasil<br><span style="font-size:15px;font-weight:700">${r.jogadores} pessoas no ranking geral · você é o ${r.posGeral || '-'}º`
+    + (frente ? `<br>Passe ${esc(frente.nome)} (QI ${frente.qi}) para subir!` : pos === 1 ? '<br>Você está no topo! Segure a coroa 👑' : '') + '</span>'
+    : 'Seu recorde da semana já é maior. Continue tentando!';
+  if (meuMelhor && meuMelhor > qi) el.innerHTML += `<br><span style="font-size:15px">Seu recorde na semana: ${meuMelhor}</span>`;
+  if (pos && pos <= 3) { faiscas(innerWidth / 2, innerHeight / 2); fala(`Você está em ${pos}º lugar no Brasil! 🔥`); }
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+let ultimaPos = null;
+function linhaRank(i, nome, qi, voce) { return `<div class="linhaRank${voce ? ' voce' : ''}"><b>${i}º</b><span>${voce ? '🔥 ' : ''}${esc(nome)}</span>${qi}</div>`; }
+function desenhaRanking() {
+  document.querySelectorAll('.abas [data-aba]').forEach(b => b.setAttribute('aria-selected', b.dataset.aba === abaRank));
+  const q = ler('melhorQI', 0), apelido = ler('apelido', ''), famosos = abaRank === 'famosos';
+  $('avisoFamosos').style.display = famosos ? 'block' : 'none';
+  if (famosos) {
+    $('rankPodio').innerHTML = ''; $('rankInfo').textContent = 'Seu recorde no meio dos gênios da história:';
+    const lista = [...FAMOSOS.map(([n, v]) => ({ n, v })), ...(q ? [{ n: apelido || 'VOCÊ', v: q, voce: true }] : [])].sort((a, b) => b.v - a.v || (b.voce ? 1 : 0) - (a.voce ? 1 : 0));
+    $('rankFamosos').innerHTML = lista.map((x, i) => linhaRank(i + 1, x.n, x.v, x.voce)).join('');
+    return;
+  }
+  const d = rankDados, lista = d?.[abaRank] || [], pos = d?.[abaRank === 'semanal' ? 'posSemana' : 'posGeral'];
+  if (!d) { $('rankInfo').textContent = 'Carregando o ranking... (precisa de internet)'; $('rankPodio').innerHTML = ''; $('rankFamosos').innerHTML = ''; return; }
+  $('rankInfo').innerHTML = (abaRank === 'semanal' ? 'Zera toda segunda-feira. ' : 'O melhor QI de cada um. ')
+    + (pos ? `Você: <b style="color:var(--amarelo)">${pos}º</b>` : 'Você ainda não está aqui. Faça um teste!');
+  const top = [lista[1], lista[0], lista[2]];
+  $('rankPodio').innerHTML = lista.length ? top.map((x, k) => x ? `<div class="p${[2, 1, 3][k]}${pos === [2, 1, 3][k] ? ' voce' : ''}">${['🥈', '👑', '🥉'][k]}<span>${esc(x.nome)}</span><em>${x.qi}</em></div>` : '<div></div>').join('') : '';
+  $('rankFamosos').innerHTML = lista.length ? lista.slice(3).map((x, i) => linhaRank(i + 4, x.nome, x.qi, pos === i + 4)).join('')
+    : '<p style="color:#FFE3A8;text-align:center">Ninguém ainda. Seja o primeiro! 🔥</p>';
+}
 function abrirRanking() {
+  desenhaRanking(); buscarRanking().then(desenhaRanking);
   const q = ler('melhorQI', 0);
   $('rankNivel').innerHTML = htmlNivel();
   $('rankMetas').innerHTML = METAS_QI.map(m => `<span class="${q >= m ? 'ok' : ''}">${q >= m ? '🏅' : '🔒'} QI ${m}</span>`).join('');
-  const lista = [...FAMOSOS.map(([n, v]) => ({ n, v })), ...(q ? [{ n: 'VOCÊ', v: q, voce: true }] : [])].sort((a, b) => b.v - a.v || (b.voce ? 1 : 0) - (a.voce ? 1 : 0));
-  $('rankFamosos').innerHTML = lista.map((x, i) => `<div class="linhaRank${x.voce ? ' voce' : ''}"><b>${i + 1}º</b><span>${x.voce ? '🔥 ' : ''}${x.n}</span>${x.v}</div>`).join('')
-    + (q ? '' : '<p style="color:#FFE3A8">Faça o teste de QI para entrar no ranking!</p>');
   const meus = ler('testes', []);
   $('rankMeus').innerHTML = meus.length ? meus.map((x, i) => `<div class="linhaRank"><b>${i + 1}º</b><span>${x.tipo} · ${x.data}</span>${x.qi}</div>`).join('') : '<p style="color:#FFE3A8">Nenhum teste ainda.</p>';
   mostrar('ranking');
 }
+function hoje(dias = 0) { const d = new Date(Date.now() + dias * 864e5); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function marcarDia() {
+  const ult = ler('diaUlt', ''), seq = ler('sequencia', 0);
+  if (ult === hoje()) return;
+  guardar('sequencia', ult === hoje(-1) ? seq + 1 : 1); guardar('diaUlt', hoje());
+}
+function desenhaTeaser() {
+  const d = rankDados, l = d?.semanal || [], pos = d?.posSemana;
+  $('teaser').innerHTML = `<b>🏆 Ranking da semana</b> ${pos ? `· você está em <b>${pos}º</b>` : '· você ainda não entrou'}`
+    + `<div class="top3">${l.length ? l.slice(0, 3).map((x, i) => `${['🥇', '🥈', '🥉'][i]} ${esc(x.nome)} ${x.qi}`).join(' &nbsp; ') : 'Ninguém ainda. Seja o primeiro! 🔥'}</div>`;
+}
 function atualizaInicio() {
+  const seq = ler('diaUlt', '') === hoje() || ler('diaUlt', '') === hoje(-1) ? ler('sequencia', 0) : 0;
+  $('sequencia').textContent = seq ? `🔥 ${seq} dia${seq > 1 ? 's' : ''} seguido${seq > 1 ? 's' : ''}` : '🔥 0 dias seguidos';
+  desenhaTeaser(); buscarRanking().then(desenhaTeaser);
   $('cartaoNivel').innerHTML = htmlNivel();
   $('recordeInicio').textContent = recorde ? `🏆 Recorde: nível ${recorde}  ·  ⭐ ${estrelasTotal}` : '';
-  $('jogar').textContent = nivel > 1 ? `😜 Pegadinhas (nível ${nivel})` : '😜 Pegadinhas';
-  const q = ler('melhorQI', 0); $('testeQI').textContent = q ? `🧠 TESTE DE QI (recorde ${q})` : '🧠 TESTE DE QI';
+  $('subPegadinha').textContent = nivel > 1 ? `nível ${nivel}` : 'sem fim';
+  const q = ler('melhorQI', 0); $('testeQI').innerHTML = `🧠 TESTE DE QI<small>${q ? `seu recorde: ${q} · bata ele!` : '20 perguntas · uns 7 minutos'}</small>`;
 }
 
 // ---------- peças das fases ----------
@@ -723,7 +859,7 @@ const clique = () => som([[660, 0, .06]], 'sine', .1);
 const somErro = () => som([[240, 0, .15], [170, .12, .25]], 'square', .08);
 const somAcerto = () => som([[523, 0], [659, .1], [784, .2], [1047, .3, .4]]);
 function vibrar(p) { try { navigator.vibrate && navigator.vibrate(p); } catch {} }
-function atualizaSom() { $('somInicio').textContent = somLigado ? '🔊 Som e voz' : '🔇 Sem som'; if (!somLigado) try { speechSynthesis.cancel(); } catch {} }
+function atualizaSom() { $('somInicio').textContent = somLigado ? '🔊' : '🔇'; $('somInicio').setAttribute('aria-pressed', somLigado); if (!somLigado) try { speechSynthesis.cancel(); } catch {} }
 // a Chaminha fala em voz alta (voz do próprio celular, sem custo)
 function falarAlto(txt) {
   if (!somLigado || !('speechSynthesis' in window)) return;
@@ -984,6 +1120,7 @@ function fimSessao() {
   const acertos = s.respostas.filter(r => r.certo).length;
   somAcerto(); faiscas(innerWidth / 2, innerHeight / 3);
   // XP: 10 por ponto de dificuldade de cada acerto; avisa quando sobe de nível
+  marcarDia();
   const xpAntes = ler('xp', 0), ganho = s.respostas.reduce((a, r) => a + (r.certo ? 10 * r.d : 0), 0);
   guardar('xp', xpAntes + ganho);
   const nA = nivelDe(xpAntes), nD = nivelDe(xpAntes + ganho);
@@ -1005,9 +1142,12 @@ function fimSessao() {
       + (acima ? `<br>Próximo no ranking: ${acima[0]} (${acima[1]})` : '') + xpTexto;
     $('resNovo').onclick = () => iniciarSessao('qi', s.area);
     $('resTreinar').textContent = `🏋️ Treinar ${AREAS[fraca][1]}`; $('resTreinar').onclick = () => iniciarSessao('treino', fraca);
-    $('resCompartilhar').onclick = () => compartilhar(`🧠 Meu QI na Chaminha deu ${qi}! ${rotuloQI(qi)}\nPonto forte: ${AREAS[forte][1]}.\nCada teste tem perguntas diferentes. Duvido você passar de ${qi}:`);
+    $('resCompartilhar').onclick = () => compartilhar(`🧠 Meu QI na Chaminha deu ${qi}! ${rotuloQI(qi)}` + (ultimaPos ? `\n🏆 Estou em ${ultimaPos}º no ranking da semana.` : '')
+      + `\nCada teste tem perguntas diferentes. Duvido você passar de ${qi}:`);
     fala(`Seu QI estimado deu ${qi}! ${rotuloQI(qi)}`);
+    ultimaPos = null; setTimeout(() => rankingDepois(qi), 1200);
   } else {
+    $('resPosicao').textContent = '';
     const niveis = ler('nivelArea', {}); niveis[s.area] = s.d; guardar('nivelArea', niveis);
     $('resTitulo').textContent = `Treino de ${AREAS[s.area][1]}`;
     $('resNumero').textContent = `${acertos}/${s.total}`; $('resRotulo').textContent = acertos >= 8 ? 'Mandou muito! 🔥' : acertos >= 5 ? 'Bom treino! 💪' : 'Todo treino conta! 💛';
@@ -1034,6 +1174,14 @@ $('testeQI').onclick = () => iniciarSessao('qi');
 $('testeLogica').onclick = () => iniciarSessao('qi', 'logica');
 $('abrirRanking').onclick = () => { clique(); abrirRanking(); };
 $('voltarRanking').onclick = () => { clique(); mostrar('inicio'); };
+$('teaser').onclick = () => { clique(); abrirRanking(); };
+$('rankJogar').onclick = () => iniciarSessao('qi');
+document.querySelectorAll('.abas [data-aba]').forEach(b => b.onclick = () => { clique(); abaRank = b.dataset.aba; desenhaRanking(); });
+$('trocarNome').onclick = async () => {
+  clique(); if (!(await pedirApelido())) return;
+  const q = ler('melhorQI', 0); if (q) await enviarRanking(q);
+  await buscarRanking(); desenhaRanking();
+};
 $('abrirTreino').onclick = () => { clique(); abrirTreino(); };
 $('voltarTreino').onclick = () => { clique(); mostrar('inicio'); };
 $('resInicio').onclick = () => { clique(); mostrar('inicio'); };
@@ -1051,7 +1199,7 @@ $('desafio').onclick = () => {
 $('proxima').onclick = () => { clique(); $('vitoria').style.display = 'none'; carregar(proximaFase()); };
 
 // ---------- abertura ----------
-$('logoChama').innerHTML = chaminha(120); $('resMascote').innerHTML = chaminha(90);
+$('logoChama').innerHTML = chaminha(70); $('resMascote').innerHTML = chaminha(60);
 atualizaSom(); atualizaInicio();
 for (let i = 0; i < 18; i++) {
   const b = document.createElement('i');
