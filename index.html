@@ -31,7 +31,7 @@
   .btn.fantasma { background:transparent; color:var(--amarelo); box-shadow:none; border:3px solid var(--amarelo); }
 
   /* abertura */
-  #inicio > *, #resultado > *, #ranking > *, #duelo > *, #arena > * { flex-shrink:0; }
+  #inicio > *, #resultado > *, #ranking > *, #duelo > *, #arena > *, #adedonha > * { flex-shrink:0; }
   #inicio { align-items:center; justify-content:safe center; gap:10px; text-align:center; overflow:auto; }
   #inicio h1 { color:var(--amarelo); font-size:46px; line-height:.95; margin:8px 0 0; text-shadow:0 4px 0 var(--brasa); }
   #inicio h1 small { display:block; font-size:24px; color:#FFE3A8; text-shadow:none; font-weight:600; }
@@ -178,6 +178,19 @@
   .timeSala span { background:rgba(255,255,255,.15); border-radius:10px; padding:2px 8px; font-weight:700; font-size:15px; }
   .timeSala b { margin-right:4px; }
   #fimArena .caixa { max-height:92vh; overflow:auto; }
+  .adLetra { width:84px; height:84px; flex-shrink:0; border-radius:50%; background:var(--amarelo); color:var(--tinta); font-size:56px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 6px 0 var(--brasa); }
+  .adCampo { display:flex; flex-direction:column; color:#FFE3A8; font-weight:800; font-size:15px; }
+  .adCampo input { font-size:19px; padding:6px 12px; border-radius:12px; border:3px solid var(--tinta); font-weight:700; color:var(--tinta); background:#fff; }
+  .adCampo input.ruim { border-color:var(--vermelho); } .adCampo input:disabled { background:#E6E1D8; }
+  #adStop { position:sticky; bottom:8px; z-index:2; } #adStop:disabled { opacity:.6; }
+  .adCat { background:#3A1E10; border-radius:14px; padding:8px 10px; display:flex; flex-direction:column; gap:6px; color:var(--amarelo); }
+  .adResp { text-align:left; border:2px solid transparent; border-radius:10px; background:var(--papel); color:var(--tinta); font-family:inherit; font-size:16px; padding:6px 10px; font-weight:700; cursor:pointer; min-height:40px; }
+  .adResp i { font-style:normal; font-weight:800; } .adResp.minha { background:#FFE9B8; }
+  .adResp.vazio { background:#4A2A18; color:#B89878; text-decoration:line-through; }
+  .adResp.negada { background:#F8C9C9; border-color:var(--vermelho); text-decoration:line-through; }
+  .adTimes { display:flex; gap:8px; } .adTimes span { flex:1; border-radius:12px; padding:8px; color:#fff; font-weight:800; text-align:center; }
+  .adTimes span:first-child { background:#5A2A10; } .adTimes span:last-child { background:#16405F; } .adTimes b { display:block; font-size:26px; }
   #fimArena { position:fixed; inset:0; background:rgba(43,20,8,.92); display:none; align-items:center; justify-content:center; z-index:6; padding:20px; }
   .areaBtn { display:flex; align-items:center; gap:12px; font-size:24px; padding:12px 18px; width:100%; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
@@ -227,6 +240,7 @@
     <div class="painel"><b>1. Escolha o assunto</b><div class="chips" id="catLista"></div></div>
     <button class="btn grande" id="criarDueloBtn" style="font-size:24px">⚔️ Criar duelo ao vivo<small>de 2 a 20 pessoas · Time Chaminha × Time Gelinho</small></button>
     <button class="btn" id="soloBtn" style="font-size:20px">📚 Jogar sozinho e aprender</button>
+    <button class="btn grande" id="criarAdedonhaBtn" style="font-size:24px;background:#7FD1F5;box-shadow:0 7px 0 #123A5A">🔤 Adedonha em grupo<small>letra sorteada · nome, animal, cor... · STOP!</small></button>
     <div id="dueloRecorde" style="color:#FFE3A8;text-align:center;font-weight:700"></div>
   </div>
   <div id="dueloEspera" class="painel" style="display:none;text-align:center">
@@ -265,6 +279,31 @@
     <button class="btn fantasma" id="fimSair" style="color:var(--tinta);border-color:var(--tinta)">Sair</button>
   </div>
 </div>
+
+<section class="tela" id="adedonha" style="overflow:auto;gap:10px">
+  <header style="display:flex;align-items:center;gap:8px;color:var(--amarelo)">
+    <button class="btn" id="adSair" aria-label="Sair da adedonha">✖</button>
+    <div id="adTitulo" style="font-weight:800;font-size:19px;flex:1;text-align:center"></div>
+    <div id="adTempo" style="font-weight:800;font-size:19px;min-width:44px;text-align:right"></div>
+  </header>
+  <div class="barra" style="margin:0"><b id="adBarra" style="width:100%"></b></div>
+  <div id="adEscrever" style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:12px"><div class="adLetra" id="adLetra">?</div><div id="adStatus" style="color:#FFE3A8;font-weight:700"></div></div>
+    <div id="adCampos" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button class="btn grande" id="adStop" style="font-size:30px">✋ STOP!</button>
+  </div>
+  <div id="adVotar" style="display:none;flex-direction:column;gap:10px">
+    <div style="color:#FFE3A8;font-weight:700">Toque nas respostas que <b>não valem</b>. Se a maioria negar, vale zero.</div>
+    <div id="adVotos" style="display:flex;flex-direction:column;gap:10px"></div>
+    <button class="btn grande" id="adFimVoto" style="font-size:22px">✅ Contar os pontos</button>
+  </div>
+  <div id="adResultado" style="display:none;flex-direction:column;gap:8px">
+    <div id="adPlacar" style="display:flex;flex-direction:column;gap:6px"></div>
+    <div id="adStatus2" style="color:#FFE3A8;text-align:center;font-weight:700"></div>
+    <button class="btn grande" id="adProxima" style="font-size:24px">🎲 Próxima letra</button>
+    <button class="btn fantasma" id="adEncerrar">🏁 Encerrar e ver o campeão</button>
+  </div>
+</section>
 
 <section class="tela" id="ranking" style="overflow:auto">
   <header style="display:flex;align-items:center;gap:10px;color:var(--amarelo)">
@@ -1297,7 +1336,9 @@ try {
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 <script src="perguntas.js"></script>
+<script src="perguntas2.js"></script>
 <script src="arena.js"></script>
+<script src="adedonha.js"></script>
 <script>
 $('duelMini').innerHTML = chaminha(34) + gelinho(34);
 $('dueloHeroi').innerHTML = chaminha(80) + '<span style="font-size:34px;font-weight:800;color:var(--amarelo)">VS</span>' + gelinho(80);

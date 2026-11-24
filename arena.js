@@ -151,6 +151,7 @@ function fimArena() {
   }
   $('fimArenaMascote').innerHTML = svg; $('fimArenaTitulo').innerHTML = titulo; $('fimArenaPlacar').innerHTML = placar;
   $('fimArenaXP').textContent = `+${ganho} XP · ${eu.acertos} acertos`;
+  $('fimRevanche').style.display = '';
   $('fimRevanche').textContent = !duelo ? '🔁 Jogar de novo' : a.host ? '⚔️ Revanche' : '⚔️ Pedir revanche';
   $('fimArenaZap').onclick = () => compartilhar(duelo
     ? `⚔️ Fiquei em ${meuLugar(a)}º de ${js.length} no duelo ao vivo do QI da Chaminha (${eu.pts} pontos)! Quem encara a próxima?`
@@ -186,7 +187,7 @@ function telaEspera() {
 function desenhaSala() {
   const a = arena; if (!a) return;
   const js = Object.entries(a.jog);
-  $('dueloJogadores').innerHTML = `<div style="font-weight:800">${nomeCat(a.cat)} · ${js.length} de ${MAX_JOG} jogadores</div>`
+  $('dueloJogadores').innerHTML = `<div style="font-weight:800">${a.jogo === 'adedonha' ? '🔤 Adedonha' : nomeCat(a.cat)} · ${js.length} de ${MAX_JOG} jogadores</div>`
     + [0, 1].map(t => `<div class="timeSala ${t ? 'gelo' : 'fogo'}">${mascoteTime(t, 30)}<b>${TIMES[t][1]}</b>${js.filter(([, j]) => j.time === t).map(([p, j]) => `<span>${esc(j.nome)}${p === a.eu ? ' (você)' : ''}</span>`).join('') || '<span>ninguém ainda</span>'}</div>`).join('');
   if (a.host) {
     $('comecarDuelo').style.display = js.length >= 2 ? '' : 'none';
@@ -197,13 +198,13 @@ function desenhaSala() {
 function novoJogador(nome, time) { return { nome: String(nome || 'Amigo').replace(/[<>]/g, '').slice(0, 16), time, pts: 0, acertos: 0, resp: -1, fora: false }; }
 
 // ---------- anfitrião ----------
-async function criarDuelo() {
+async function criarDuelo(jogo = 'quiz') {
   clique(); const nome = await garantirApelido(); if (!nome) return;
   const cat = catEscolhida();
   pararArena(); telaEspera(); statusDuelo('Abrindo a sala...');
   try { await carregarPeer(); } catch { statusDuelo('Sem internet para o duelo agora. Tente de novo.'); return; }
   const codigo = codigoSala();
-  arena = { modo: 'duelo', host: true, eu: 'h', codigo, cat, jog: { h: novoJogador(nome, 0) }, conns: {}, rodando: false };
+  arena = { modo: 'duelo', host: true, eu: 'h', codigo, cat, jogo, jog: { h: novoJogador(nome, 0) }, conns: {}, rodando: false };
   const peer = arena.peer = new Peer(idSala(codigo));
   peer.on('open', () => { $('dueloCodigo').textContent = codigo; $('dueloConvite').style.display = 'flex'; desenhaSala(); enviarConvite(); });
   peer.on('error', e => statusDuelo(e.type === 'unavailable-id' ? 'Código ocupado, crie outro.' : 'Não deu para abrir a sala. Confira a internet.'));
@@ -217,14 +218,14 @@ async function criarDuelo() {
     conn.on('close', () => {
       const a = arena; if (!a?.jog[conn.peer]) return;
       delete a.jog[conn.peer]; delete a.conns[conn.peer];
-      avisarTodos({ t: 'sala', jog: a.jog, cat: a.cat }); desenhaSala(); desenhaPlacar();
-      if (a.rodando) checarFimQuestao();
+      avisarTodos({ t: 'sala', jog: a.jog, cat: a.cat, jogo: a.jogo }); desenhaSala(); desenhaPlacar();
+      if (a.rodando && a.jogo === 'quiz') checarFimQuestao();
     });
   });
 }
 function enviarConvite() {
   const a = arena; if (!a) return;
-  compartilhar(`⚔️ ${a.jog[a.eu].nome} abriu um DUELO AO VIVO no QI da Chaminha! Tema: ${nomeCat(a.cat)}\n🔥 Time Chaminha × Time Gelinho ❄️ · até ${MAX_JOG} pessoas. Entra agora:`,
+  compartilhar(a.jogo === 'adedonha' ? `🔤 ${a.jog[a.eu].nome} abriu uma ADEDONHA AO VIVO no QI da Chaminha!\nLetra sorteada, todo mundo escreve e quem terminar grita STOP. Até ${MAX_JOG} pessoas. Entra agora:` : `⚔️ ${a.jog[a.eu].nome} abriu um DUELO AO VIVO no QI da Chaminha! Tema: ${nomeCat(a.cat)}\n🔥 Time Chaminha × Time Gelinho ❄️ · até ${MAX_JOG} pessoas. Entra agora:`,
     location.origin + location.pathname + '?duelo=' + a.codigo);
 }
 function doConvidado(pid, m) {
@@ -234,8 +235,9 @@ function doConvidado(pid, m) {
     a.jog[pid] = novoJogador(m.nome, n0 <= n1 ? 0 : 1);
     a.jog[pid].fora = a.rodando; // quem chega no meio entra na próxima rodada
     a.conns[pid]?.send({ t: 'bemvindo', eu: pid, rodando: a.rodando });
-    avisarTodos({ t: 'sala', jog: a.jog, cat: a.cat }); desenhaSala(); desenhaPlacar();
+    avisarTodos({ t: 'sala', jog: a.jog, cat: a.cat, jogo: a.jogo }); desenhaSala(); desenhaPlacar();
   }
+  if (m.t?.startsWith('ad_')) adHost(pid, m);
   if (m.t === 'r' && a.rodando && m.i === a.i && !a.jog[pid]?.fora) {
     pontuar(pid, m.i, Math.max(0, Math.min(150, m.pts | 0))); // limite: ninguém manda mais do que o máximo possível
     avisarTodos({ t: 'placar', jog: a.jog }); checarFimQuestao();
@@ -292,6 +294,8 @@ function doAnfitriao(m) {
   if (m.t === 'bemvindo') { a.eu = m.eu; if (m.rodando) statusDuelo('O duelo já começou. Você entra na próxima rodada! ⏳'); }
   if (m.jog) { a.jog = m.jog; }
   if (m.cat) a.cat = m.cat;
+  if (m.jogo) a.jogo = m.jogo;
+  if (m.t?.startsWith('ad_')) return adGuest(m);
   if (m.t === 'sala') { if (!document.querySelector('#arena.ativa')) desenhaSala(); desenhaPlacar(); }
   if (m.t === 'inicio') { a.perguntas = m.perguntas; a.acabou = false; $('fimArena').style.display = 'none'; mostrar('arena'); contagem(() => {}); }
   if (m.t === 'q' && a.perguntas && !a.jog[a.eu]?.fora) mostrarPergunta(m.i);
@@ -315,15 +319,16 @@ function contagem(depois) {
 $('abrirDuelo').onclick = () => { clique(); abrirDuelo(); };
 $('voltarDuelo').onclick = () => { clique(); pararArena(); mostrar('inicio'); };
 $('soloBtn').onclick = iniciarSolo;
-$('criarDueloBtn').onclick = criarDuelo;
-$('comecarDuelo').onclick = () => { clique(); comecarRodada(); };
+$('criarDueloBtn').onclick = () => criarDuelo('quiz');
+$('comecarDuelo').onclick = () => { clique(); arena?.jogo === 'adedonha' ? adComecar() : comecarRodada(); };
+$('criarAdedonhaBtn').onclick = () => criarDuelo('adedonha');
 $('reenviarConvite').onclick = () => { clique(); enviarConvite(); };
 $('cancelarDuelo').onclick = () => { clique(); abrirDuelo(); };
 $('sairArena').onclick = () => { clique(); $('fimArena').style.display = 'none'; pararArena(); abrirDuelo(); };
 $('fimRevanche').onclick = () => {
   clique(); const a = arena; if (!a) return abrirDuelo();
   if (a.modo === 'solo') return iniciarSolo();
-  if (a.host) { if (Object.keys(a.jog).length < 2) { $('fimArenaXP').textContent = 'Todo mundo saiu. Mande o convite de novo.'; return; } return comecarRodada(); }
+  if (a.host) { if (Object.keys(a.jog).length < 2) { $('fimArenaXP').textContent = 'Todo mundo saiu. Mande o convite de novo.'; return; } return a.jogo === 'adedonha' ? adComecar() : comecarRodada(); }
   if (!a.conn?.open) { $('fimArenaXP').textContent = 'O anfitrião saiu. Crie um duelo novo.'; return; }
   a.conn.send({ t: 'revanche' }); $('fimArenaXP').textContent = 'Pedido enviado! Esperando o anfitrião...';
 };
