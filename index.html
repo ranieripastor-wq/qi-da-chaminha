@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#2B1408">
+<title>Pegadinha da Chaminha</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --amarelo:#FFC928; --laranja:#FF8A1F; --brasa:#F2542D; --tinta:#3A1A0A; --fundo:#2B1408; --papel:#FFF4DC;
+    --verde:#3BB54A; --vermelho:#E5383B; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+  html,body { margin:0; height:100%; color:var(--tinta); overscroll-behavior:none; overflow:hidden;
+    font-family:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #5A2A10 0%, var(--fundo) 60%) fixed var(--fundo); }
+  button { font-family:inherit; }
+  .tela { position:fixed; inset:0; display:none; flex-direction:column; max-width:480px; margin:0 auto;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+  .tela.ativa { display:flex; animation:entra .35s ease-out; }
+  @keyframes entra { from { opacity:0; transform:translateY(12px); } }
+
+  .btn { border:0; border-radius:16px; font-weight:800; cursor:pointer; background:var(--amarelo); color:var(--tinta);
+    padding:8px 14px; font-size:18px; box-shadow:0 4px 0 var(--laranja); min-height:44px; min-width:44px; }
+  .btn:active { transform:translateY(3px); box-shadow:0 1px 0 var(--laranja); }
+  .btn.grande { font-size:30px; padding:12px 48px; border-radius:24px; box-shadow:0 7px 0 var(--brasa); }
+  .btn.grande:active { box-shadow:0 2px 0 var(--brasa); transform:translateY(5px); }
+  .btn.fantasma { background:transparent; color:var(--amarelo); box-shadow:none; border:3px solid var(--amarelo); }
+
+  /* abertura */
+  #inicio { align-items:center; justify-content:center; gap:10px; text-align:center; }
+  #inicio h1 { color:var(--amarelo); font-size:46px; line-height:.95; margin:8px 0 0; text-shadow:0 4px 0 var(--brasa); }
+  #inicio h1 small { display:block; font-size:24px; color:#FFE3A8; text-shadow:none; font-weight:600; }
+  #inicio p { color:#FFE3A8; margin:0 0 14px; font-size:18px; }
+  .flutua { animation:flutua 2.4s ease-in-out infinite; }
+  @keyframes flutua { 50% { transform:translateY(-12px) rotate(-3deg); } }
+  .brasas { position:fixed; inset:0; pointer-events:none; overflow:hidden; }
+  .brasas i { position:absolute; bottom:-10px; width:6px; height:6px; border-radius:50%; background:var(--laranja);
+    opacity:.6; animation:sobe linear infinite; }
+  @keyframes sobe { to { transform:translateY(-110vh) translateX(var(--dx)); opacity:0; } }
+
+  /* mapa */
+  #mapa header, #jogo header { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--amarelo); }
+  #mapa h2 { margin:0; font-size:26px; }
+  #grade-fases { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px; overflow:auto; padding:4px 2px 16px; }
+  .fase { aspect-ratio:1; border-radius:20px; border:0; font-size:28px; font-weight:800; background:var(--papel); color:var(--tinta);
+    box-shadow:0 5px 0 var(--brasa); cursor:pointer; position:relative; }
+  .fase .selo { position:absolute; right:-4px; top:-8px; font-size:20px; }
+  .fase.travada { background:#4A2A18; color:#8A6A50; box-shadow:0 5px 0 #20100A; cursor:default; }
+  .fase.agora { background:var(--amarelo); animation:pulsa 1.4s infinite; }
+  @keyframes pulsa { 50% { transform:scale(1.07); } }
+  #progresso { color:#FFE3A8; font-size:18px; margin-top:6px; }
+
+  /* jogo */
+  #nivel { font-size:26px; margin:0; cursor:default; }
+  .barra { height:8px; background:#4A2A18; border-radius:8px; margin-top:8px; overflow:hidden; }
+  .barra b { display:block; height:100%; background:linear-gradient(90deg,var(--amarelo),var(--brasa)); border-radius:8px; transition:width .5s; }
+  #card { background:var(--papel); border-radius:26px; margin-top:12px; padding:14px; flex:1; display:flex; flex-direction:column;
+    box-shadow:0 6px 0 var(--brasa); min-height:0; }
+  #pergunta { font-size:25px; font-weight:800; text-align:center; line-height:1.15; min-height:64px; display:flex; align-items:center;
+    justify-content:center; flex-wrap:wrap; }
+  #palco { position:relative; flex:1; min-height:300px; touch-action:none; border-radius:18px; transition:background .6s; }
+  .obj { position:absolute; display:flex; align-items:center; justify-content:center; cursor:pointer; touch-action:none; }
+  .opc { position:relative; border:3px solid var(--tinta); border-radius:18px; background:#fff; font-size:28px; font-weight:800;
+    padding:10px 0; width:100%; cursor:pointer; color:var(--tinta); box-shadow:0 4px 0 var(--tinta); }
+  .opc:active { transform:translateY(3px); box-shadow:0 1px 0 var(--tinta); }
+  .grade { display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:16px 6px; }
+  .palavra { cursor:pointer; }
+  .errado { animation:treme .4s; }
+  .errado::after { content:"✖"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--vermelho); font-size:64px; font-weight:800; text-shadow:0 0 6px #fff; pointer-events:none; animation:some .8s forwards; }
+  @keyframes some { 0% { transform:scale(.3); } 25% { transform:scale(1.1); } 70% { opacity:1; } 100% { opacity:0; } }
+  .certo { outline:5px solid var(--verde); outline-offset:3px; border-radius:18px; }
+  @keyframes treme { 20%{transform:translateX(-9px)} 40%{transform:translateX(9px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(4px)} }
+  #fala { display:flex; align-items:flex-end; gap:8px; margin-top:10px; min-height:84px; }
+  #mascote { animation:flutua 2.4s ease-in-out infinite; }
+  #balao { background:#fff; border-radius:18px; padding:8px 14px; font-size:18px; line-height:1.25; flex:1; position:relative; }
+  #balao::before { content:""; position:absolute; left:-10px; bottom:18px; border:10px solid transparent; border-right-color:#fff; border-left:0; }
+  #balao.novo { animation:pop .3s; }
+  @keyframes pop { from { transform:scale(.85); } }
+
+  /* vitória */
+  #vitoria { position:fixed; inset:0; background:rgba(43,20,8,.88); display:none; align-items:center; justify-content:center; z-index:5; padding:20px; }
+  #vitoria .caixa { background:var(--papel); border-radius:28px; padding:20px 18px 22px; text-align:center; max-width:400px; width:100%;
+    box-shadow:0 8px 0 var(--brasa); animation:pop .4s cubic-bezier(.3,1.6,.5,1); display:flex; flex-direction:column; align-items:center; gap:8px; }
+  #vitTexto { font-size:36px; margin:0; color:var(--brasa); line-height:1; }
+  #porque { font-size:19px; line-height:1.3; background:#FFE9B8; border-radius:16px; padding:10px 14px; margin:4px 0; }
+  #porque b { display:block; font-size:15px; color:var(--brasa); letter-spacing:1px; }
+  #placar { font-size:22px; letter-spacing:2px; line-height:1.3; }
+  .faisca { position:fixed; pointer-events:none; z-index:6; font-size:26px; animation:explode 1.1s ease-out forwards; }
+  @keyframes explode { to { transform:translate(var(--x), var(--y)) rotate(var(--r)) scale(.4); opacity:0; } }
+
+  /* movimento: objetos entram pulando e balançam; o balanço fica no filho para não brigar com arrastar/tremer */
+  .obj { animation:entraObj .45s cubic-bezier(.3,1.6,.5,1) backwards; animation-delay:calc(var(--i, 0) * 80ms); }
+  .obj > * { animation:balanca 3s ease-in-out infinite; animation-delay:calc(var(--i, 0) * -700ms); }
+  .grade .opc { animation:entraObj .4s cubic-bezier(.3,1.6,.5,1) backwards; }
+  .grade .opc:nth-child(2) { animation-delay:.07s } .grade .opc:nth-child(3) { animation-delay:.14s } .grade .opc:nth-child(4) { animation-delay:.21s }
+  @keyframes entraObj { from { transform:scale(0) rotate(-12deg); opacity:0; } }
+  @keyframes balanca { 50% { transform:translateY(-6px) rotate(2deg); } }
+  #combo { position:absolute; left:50%; top:46px; transform:translateX(-50%); background:var(--brasa); color:#fff; font-weight:800;
+    border-radius:12px; padding:0 10px; font-size:15px; display:none; animation:pop .3s; white-space:nowrap; }
+  #jogo header { position:relative; }
+  #estrelas { font-size:40px; letter-spacing:6px; min-height:48px; }
+  #estrelas span { display:inline-block; animation:estrela .5s cubic-bezier(.3,1.8,.5,1) backwards; }
+  #estrelas span:nth-child(2) { animation-delay:.25s } #estrelas span:nth-child(3) { animation-delay:.5s }
+  #estrelas .apagada { filter:grayscale(1); opacity:.3; }
+  @keyframes estrela { from { transform:scale(0) rotate(-180deg); } }
+  .fase .mini { position:absolute; left:0; right:0; bottom:4px; font-size:11px; letter-spacing:-1px; }
+  .pulo { animation:pulo .5s 2 !important; }
+  @keyframes pulo { 40% { transform:translateY(-22px) scale(1.15, .9); } }
+  .voa { animation:voa 3.2s ease-in-out infinite !important; }
+  @keyframes voa { 0%{left:5%;top:5%} 25%{left:70%;top:15%} 50%{left:55%;top:65%} 75%{left:8%;top:50%} 100%{left:5%;top:5%} }
+  .balao { animation:subirBalao linear infinite !important; }
+  @keyframes subirBalao { from { top:100%; } to { top:-30%; } }
+  .cai { animation:cai .8s ease-in forwards !important; }
+  @keyframes cai { to { transform:translateY(260px) rotate(200deg); } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+  @media (max-height:700px) { #pergunta { font-size:21px; min-height:52px; } #fala { min-height:70px; } }
+</style>
+</head>
+<body>
+<div class="brasas" id="brasas" aria-hidden="true"></div>
+
+<section class="tela ativa" id="inicio">
+  <div class="flutua" id="logoChama"></div>
+  <h1>Pegadinha<small>da Chaminha</small></h1>
+  <p>Aqui nada é o que parece. 🔥<br>E nenhuma partida é igual!</p>
+  <button class="btn grande" id="jogar">JOGAR</button>
+  <div id="recordeInicio" style="color:#FFE3A8;font-size:18px;font-weight:700"></div>
+  <button class="btn fantasma" id="recomecar">Recomeçar do nível 1</button>
+  <button class="btn fantasma" id="somInicio" aria-label="Ligar ou desligar o som">🔊 Som</button>
+</section>
+
+
+
+<section class="tela" id="jogo">
+  <header>
+    <button class="btn" id="abrirMapa" aria-label="Voltar para o início">☰</button>
+    <h1 id="nivel">NÍVEL 1</h1>
+    <div id="combo"></div>
+    <span style="display:flex;gap:6px">
+      <button class="btn" id="desafio" aria-label="Desafiar um amigo">📲</button>
+      <button class="btn" id="dica" aria-label="Pedir dica">💡</button>
+    </span>
+  </header>
+  <div class="barra"><b id="barraJogo"></b></div>
+  <div id="card">
+    <div id="pergunta"></div>
+    <div id="palco"></div>
+  </div>
+  <div id="fala">
+    <div id="mascote" aria-hidden="true"></div>
+    <div id="balao" role="status" aria-live="polite"></div>
+  </div>
+</section>
+
+<div id="vitoria" role="dialog" aria-modal="true" aria-labelledby="vitTexto">
+  <div class="caixa">
+    <div id="vitMascote" class="flutua"></div>
+    <h2 id="vitTexto">Acertou!</h2>
+    <div id="estrelas" aria-hidden="true"></div>
+    <div id="porque"></div>
+    <div id="placar"></div>
+    <button class="btn" id="compartilhar" style="display:none">📲 Mandar pros amigos</button>
+    <button class="btn grande" id="proxima">Próxima ➜</button>
+  </div>
+</div>
+
+<script>
+// Chaminha em SVG, cores da mascote do canal
+function chaminha(t = 90, cor1 = '#FFC928', cor2 = '#FF8A1F', feliz = true, dormindo = false) {
+  const olhos = dormindo ? '<path d="M34 80 h12 M54 80 h12" stroke="#3A1A0A" stroke-width="4" stroke-linecap="round"/>'
+    : '<circle cx="40" cy="80" r="5" fill="#3A1A0A"/><circle cx="60" cy="80" r="5" fill="#3A1A0A"/><circle cx="42" cy="78" r="1.6" fill="#fff"/><circle cx="62" cy="78" r="1.6" fill="#fff"/>';
+  return `<svg width="${t}" height="${t * 1.2}" viewBox="0 0 100 120">
+    <path d="M50 4 C62 30 92 44 88 78 C85 104 66 116 50 116 C34 116 15 104 12 78 C9 54 30 46 34 24 C42 36 46 22 50 4Z" fill="${cor2}" stroke="#3A1A0A" stroke-width="4"/>
+    <path d="M50 40 C58 58 74 66 72 86 C70 102 60 108 50 108 C40 108 30 102 28 86 C27 70 40 64 50 40Z" fill="${cor1}"/>
+    ${olhos}
+    <ellipse cx="32" cy="92" rx="5" ry="3" fill="#F2542D" opacity=".35"/><ellipse cx="68" cy="92" rx="5" ry="3" fill="#F2542D" opacity=".35"/>
+    <path d="${feliz ? 'M40 92 Q50 102 60 92' : 'M42 98 Q50 92 58 98'}" stroke="#3A1A0A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+const vela = `<svg width="70" height="150" viewBox="0 0 70 150"><rect x="15" y="40" width="40" height="105" rx="6" fill="#F7E7C6" stroke="#3A1A0A" stroke-width="4"/><line x1="35" y1="40" x2="35" y2="22" stroke="#3A1A0A" stroke-width="4"/></svg>`;
+const sol = `<svg width="90" height="90" viewBox="0 0 90 90"><g stroke="#FF8A1F" stroke-width="6" stroke-linecap="round">${[0,45,90,135,180,225,270,315].map(a=>`<line x1="45" y1="6" x2="45" y2="16" transform="rotate(${a} 45 45)"/>`).join('')}</g><circle cx="45" cy="45" r="24" fill="#FFC928" stroke="#3A1A0A" stroke-width="4"/></svg>`;
+
+// Fases inventadas por nós. Cada uma monta o palco e chama ganhar() quando acerta; "porque" aparece na vitória.
+const FASES = [
+  { p: 'Toque na chama mais QUENTE.', dica: 'Nem toda chama quente é laranja...',
+    porque: 'A chama azul do fogão passa de 1.500 °C. A amarelinha da vela fica perto de 1.000 °C.',
+    monta(palco) {
+      [['#FFC928','#FF8A1F',8,8],['#FFD966','#F2542D',55,6],['#9AD8FF','#2F6BFF',10,52],['#FFE08A','#FFB020',56,54]]
+        .forEach(([a,b,x,y], i) => obj(palco, chaminha(i === 2 ? 70 : 100, a, b), x, y, el => i === 2 ? ganhar(el) : errar(el)));
+    } },
+  { p: 'Acenda a vela.', dica: 'Eu sou fogo! Me arrasta até o pavio.',
+    porque: 'A resposta estava na tela o tempo todo: eu mesma!',
+    monta(palco) {
+      const v = obj(palco, vela, 62, 40);
+      const c = obj(palco, chaminha(70), 10, 10);
+      arrastar(c, () => perto(c, v, 20) ? (v.innerHTML = vela.replace('</svg>', '') + `<g transform="translate(20 -8) scale(.3)">${chaminha(100).replace(/<\/?svg[^>]*>/g,'')}</g></svg>`, c.remove(), ganhar(v)) : errar(c));
+    } },
+  { p: 'Pegue a estrela!', dica: 'Ela não para quieta... toca bem na hora que ela passar!',
+    porque: 'Reflexo de goleiro! ⭐',
+    monta(palco) {
+      const e = obj(palco, '<span style="font-size:70px">⭐</span>', 5, 5, () => ganhar(e));
+      e.classList.add('voa');
+      obj(palco, '<span style="font-size:50px">☁️</span>', 40, 35, errar);
+    } },
+  { p: 'Quanto é 2 + 2 × 2?', dica: 'Tem uma conta que vem antes da outra.',
+    porque: 'Primeiro a multiplicação: 2 × 2 = 4. Depois a soma: 2 + 4 = 6.',
+    monta(palco) { botoes(palco, ['8','6','4','10'], '6'); } },
+  { p: '', dica: 'Olha bem as letras da pergunta... uma delas está quentinha.',
+    porque: 'A letra laranja da pergunta era eu, escondidinha!',
+    monta(palco) {
+      const per = $('pergunta');
+      per.innerHTML = 'Ache a Chaminha escondida.'.split('').map((l, i) =>
+        i === 3 ? `<span class="palavra" id="esc" style="color:#FF8A1F">${l}</span>` : l).join('');
+      per.onclick = e => e.target.id === 'esc' ? ganhar() : null;
+      for (let i = 0; i < 6; i++) obj(palco, `<span style="font-size:60px">🍂</span>`, 8 + (i % 3) * 30, 15 + Math.floor(i / 3) * 40, errar);
+    } },
+  { p: 'Faça a Chaminha dormir.', dica: 'Com essa luz toda ninguém dorme...',
+    porque: 'Sem o sol no céu vira noite, e a Chaminha dorme. Boa noite! 🌙',
+    monta(palco) {
+      const s = obj(palco, sol, 60, 2);
+      obj(palco, chaminha(90), 30, 50, errar);
+      arrastar(s, () => s.offsetTop > palco.clientHeight * .55 ? (s.innerHTML = '<span style="font-size:70px">🌙</span>', palco.style.background = '#1E2A4A', ganhar()) : null);
+    } },
+  { p: 'O que pesa mais: 1 kg de algodão ou 1 kg de pedra?', dica: 'Lê de novo: quantos quilos tem cada um?',
+    porque: '1 kg é 1 kg! O algodão só ocupa mais espaço.',
+    monta(palco) { botoes(palco, ['Algodão','Pedra','Igual','Nenhum'], 'Igual'); } },
+  { p: '', dica: 'Contou só 6? O sétimo está na pergunta!',
+    porque: 'O 7º balão estava escondido na pergunta! 🎈',
+    monta(palco) {
+      let estourados = 0;
+      const estoura = el => { som([[900, 0, .08]], 'square', .12); el.innerHTML = '<span style="font-size:50px">💥</span>';
+        el.onclick = null; setTimeout(() => el.remove(), 250); if (++estourados === 7) ganhar(); else fala(`${estourados} de 7! 🎈`); };
+      $('pergunta').innerHTML = 'Estoure os 7 balões <span class="palavra" id="balao7">🎈</span>';
+      $('balao7').onclick = e => estoura(e.target);
+      ['#E5383B', '#3BB54A', '#2F6BFF', '#FFB020', '#B455E8', '#FF6FA8'].forEach((cor, i) => {
+        const b = obj(palco, `<svg width="56" height="80" viewBox="0 0 56 80"><ellipse cx="28" cy="30" rx="24" ry="28" fill="${cor}" stroke="#3A1A0A" stroke-width="3"/><path d="M28 58 q-6 10 2 20" stroke="#3A1A0A" stroke-width="2" fill="none"/></svg>`,
+          4 + i * 15, 100, el => estoura(el));
+        b.classList.add('balao'); b.style.animationDuration = (4 + (i % 3) * 1.3) + 's'; b.style.animationDelay = (-i * .9) + 's';
+      });
+    } },
+  { p: 'Toque no botão VERDE.', dica: 'Não leia o que está escrito. Olhe a COR.',
+    porque: 'O cérebro lê a palavra antes de ver a cor. Isso tem nome: efeito Stroop!',
+    monta(palco) {
+      const g = grade(palco);
+      [['VERDE','#F2542D'],['AZUL','#3BB54A'],['AMARELO','#2F6BFF'],['VERMELHO','#FFC928']].forEach(([txt, cor]) => {
+        const b = botao(g, txt, () => cor === '#3BB54A' ? ganhar(b) : errar(b));
+        b.style.cssText = `background:${cor};color:#fff;font-size:22px`;
+      });
+    } },
+  { p: 'Quantos meses do ano têm 28 dias?', dica: 'Os outros meses não têm pelo menos 28?',
+    porque: 'Todos os 12 meses têm pelo menos 28 dias!',
+    monta(palco) { botoes(palco, ['1','2','6','12'], '12'); } },
+  { p: 'Para passar desta fase... não toque em NADA.', dica: 'Às vezes o melhor é não fazer nada. Espera!',
+    porque: 'Paciência também é inteligência! 🧘',
+    monta(palco) {
+      const PROVOCA = ['Aperta, vai... 😏', 'Só um toquinho!', 'Tá com medo? 🤭', 'Quase lá...'];
+      let t = 0;
+      const b = obj(palco, '<button class="opc" style="background:#E5383B;color:#fff;font-size:34px;padding:30px 24px;border-radius:50%">APERTA!</button>', 22, 25);
+      const reinicia = el => { errar(el); t = 0; };
+      palco.onclick = e => reinicia(e.target.closest('.obj') || null);
+      cronometro(setInterval(() => {
+        if (terminou) return;
+        if (++t >= 8) { palco.onclick = null; ganhar(); } else if (t % 2 === 0) fala(PROVOCA[(t / 2 - 1) % PROVOCA.length]);
+      }, 1000));
+    } },
+  { p: 'Ache o número {N}.', dica: 'Não está nos quadradinhos... olha o topo da tela!',
+    porque: 'O número estava no título: NÍVEL {N}!',
+    monta(palco) {
+      const g = grade(palco, 3), alvo = nivel, nums = [];
+      while (nums.length < 9) { const n = 1 + Math.floor(Math.random() * 40); if (n !== alvo && !nums.includes(n)) nums.push(n); }
+      nums.forEach(n => { const b = botao(g, n, () => errar(b)); });
+      $('nivel').onclick = () => ganhar($('nivel'));
+    } },
+  { p: 'Quantas Chaminhas tem na tela?', dica: 'Conta TODAS... inclusive eu, aqui embaixo! 😄',
+    porque: '3 no quadro + eu aqui embaixo = 4!',
+    monta(palco) {
+      [[10, 5], [55, 18], [25, 40]].forEach(([x, y]) => obj(palco, chaminha(70), x, y));
+      botoes(palco, ['2', '3', '4', '5'], '4', true);
+    } },
+  { p: 'Toque no MENOR número.', dica: 'Existem números menores que zero!',
+    porque: 'Números negativos são menores que zero. O -3 é o menor.',
+    monta(palco) { botoes(palco, ['9', '0', '4', '-3'], '-3'); } },
+  { p: 'Proteja a Chaminha da chuva!', dica: 'Fogo e chuva não combinam. Tira essa nuvem daí!',
+    porque: 'Tirou a nuvem, acabou a chuva!',
+    monta(palco) {
+      obj(palco, chaminha(90), 35, 62, errar);
+      const n = obj(palco, '<span style="font-size:110px;line-height:1">🌧️</span>', 28, 22);
+      arrastar(n, () => Math.abs(n.offsetLeft - palco.clientWidth * .35) > 120 ? ganhar() : null);
+    } },
+  { p: 'Derrube a maçã da árvore.', dica: 'A maçã está alta demais... sacode o celular! (ou balança a árvore tocando nela)',
+    porque: 'Sacudiu, caiu! Às vezes a resposta está fora da tela. 📱',
+    monta(palco) {
+      let balancos = 0, caiu = false;
+      const arv = obj(palco, '<span style="font-size:190px;line-height:1">🌳</span>', 12, 5);
+      const maca = obj(palco, '<span style="font-size:44px">🍎</span>', 48, 22, el => { errar(el); fala('Tá muito alta! 😩', false); });
+      const derruba = () => { if (caiu) return; caiu = true; maca.onclick = null; maca.classList.add('cai'); setTimeout(() => ganhar(maca), 700); };
+      arv.onclick = () => { arv.style.animation = 'treme .4s'; setTimeout(() => arv.style.animation = '', 400); if (++balancos >= 6) derruba(); };
+      let ultimo = null;
+      const aoMexer = e => { const a = e.accelerationIncludingGravity; if (!a) return;
+        if (ultimo && Math.abs(a.x - ultimo.x) + Math.abs(a.y - ultimo.y) + Math.abs(a.z - ultimo.z) > 30) derruba();
+        ultimo = { x: a.x, y: a.y, z: a.z }; };
+      window.addEventListener('devicemotion', aoMexer);
+      limpezas.push(() => window.removeEventListener('devicemotion', aoMexer));
+    } },
+  { p: 'Um galo bota um ovo no telhado. Pra que lado o ovo cai?', dica: 'Quem bota ovo: o galo ou a galinha?',
+    porque: 'Galo não bota ovo. Quem bota é a galinha! 🐔',
+    monta(palco) { botoes(palco, ['Esquerda', 'Direita', 'Pro meio', 'Não cai'], 'Não cai'); } },
+  { p: 'Acorde a Chaminha!', dica: 'Ela tem sono pesado. Insiste!',
+    porque: 'Sono pesado só se vence com insistência. 😴',
+    monta(palco) {
+      let toques = 0;
+      const c = obj(palco, chaminha(150, undefined, undefined, true, true), 25, 15, () => {
+        toques++;
+        c.classList.remove('errado'); void c.offsetWidth; c.style.animation = 'treme .4s'; setTimeout(() => c.style.animation = '', 400);
+        if (toques >= 5) { c.innerHTML = chaminha(150); ganhar(c); } else fala('Zzz' + '.'.repeat(toques) + ' 💤 (mais!)');
+      });
+    } },
+  { p: 'Quantos buracos tem uma camiseta?', dica: 'Por onde passam a cabeça, os braços e a barriga?',
+    porque: 'Gola, duas mangas e a barra da cintura: 4 buracos.',
+    monta(palco) {
+      obj(palco, '<span style="font-size:110px">👕</span>', 30, 2);
+      botoes(palco, ['1', '2', '3', '4'], '4', true);
+    } },
+  { p: 'Toque 3 vezes na Chaminha.', dica: 'Ela é fujona! Seja rápido.',
+    porque: 'Pegou a fujona! Reflexo de ninja. 🥷',
+    monta(palco) {
+      let toques = 0;
+      const c = obj(palco, chaminha(80), 35, 30, () => {
+        if (++toques >= 3) return ganhar(c);
+        c.style.left = Math.random() * 70 + '%'; c.style.top = Math.random() * 65 + '%';
+        fala(['Hihi, quase!', 'Me pega se puder!'][toques - 1]);
+      });
+    } },
+  { p: 'Qual número vem depois?  1, 1, 2, 3, 5, ...', dica: 'Olha os dois números anteriores.',
+    porque: 'Cada número é a soma dos dois anteriores: 3 + 5 = 8. É a sequência de Fibonacci!',
+    monta(palco) { botoes(palco, ['6', '7', '8', '9'], '8'); } },
+  { p: 'Qual palavra está sempre escrita ERRADO?', dica: 'Lê a pergunta ao pé da letra.',
+    porque: 'A palavra "errado" está sempre escrita... "errado"! 😄',
+    monta(palco) { botoes(palco, ['Exceção', 'Errado', 'Paçoca', 'Certo'], 'Errado'); } },
+  { p: 'O que fica MAIOR quanto mais você tira?', dica: 'Pensa em algo que a gente cava no chão.',
+    porque: 'Quanto mais terra você tira, maior fica o buraco!',
+    monta(palco) { botoes(palco, ['Bolo', 'Buraco', 'Balão', 'Foto'], 'Buraco'); } },
+  { p: '', dica: 'A palavra lá em cima... só tocar nela!',
+    porque: 'Era só apagar a palavra da pergunta. 😉',
+    monta(palco) {
+      $('pergunta').innerHTML = '<span class="palavra" id="apague">APAGUE</span>&nbsp;esta palavra.';
+      $('apague').onclick = e => { e.target.style.visibility = 'hidden'; ganhar(); };
+      obj(palco, '<span style="font-size:90px">🧽</span>', 35, 30, errar);
+    } },
+];
+
+const $ = id => document.getElementById(id);
+// "pg3-": versão sem fim; o progresso das versões antigas não vale mais
+const guardar = (k, v) => { try { localStorage.setItem('pg3-' + k, JSON.stringify(v)); } catch {} };
+const ler = (k, padrao) => { try { const v = JSON.parse(localStorage.getItem('pg3-' + k)); return v ?? padrao; } catch { return padrao; } };
+
+// ---------- sorteio ----------
+// sorteador com semente: o mesmo número gera a mesma pergunta, para o link de desafio abrir a pergunta igual
+function rng(s) { return () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let R = Math.random;
+const sorteia = (a, b) => a + Math.floor(R() * (b - a + 1));
+const um = arr => arr[Math.floor(R() * arr.length)];
+const embaralha = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+// 3 erradas diferentes da certa, sem repetir
+function opcoes(certa, candidatas) { const e = [...new Set(candidatas.map(String))].filter(c => c !== String(certa)); return [String(certa), ...embaralha(e).slice(0, 3)]; }
+
+// ---------- geradores: cada chamada sorteia números, cores, palavras e emojis novos ----------
+const CORES = [['VERDE', '#3BB54A'], ['AZUL', '#2F6BFF'], ['VERMELHO', '#E5383B'], ['AMARELO', '#E0A800'], ['ROXO', '#8E44D8'], ['LARANJA', '#FF8A1F'], ['ROSA', '#FF5FA2']];
+const CATEGORIAS = {
+  frutas: ['🍎', '🍌', '🍇', '🍓', '🍍', '🥝', '🍉', '🍒', '🍐', '🥭'], animais: ['🐶', '🐱', '🐸', '🐵', '🦁', '🐮', '🐷', '🐰', '🐯', '🐻'],
+  veículos: ['🚗', '🚌', '🚲', '✈️', '🚀', '🚂', '🛵', '🚁', '🚜', '⛵'], doces: ['🍰', '🍩', '🍪', '🍫', '🍬', '🧁', '🍭', '🍦', '🥧', '🍮'],
+  bolas: ['⚽', '🏀', '🏐', '🎾', '🏈', '⚾', '🎱', '🏉'], plantas: ['🌵', '🌻', '🌷', '🌳', '🍀', '🌹', '🌴', '🌼'] };
+const PALAVRAS = ['BANANA', 'ABACAXI', 'JABUTICABA', 'CHAMINHA', 'MARACUJA', 'ARARA', 'CACHORRO', 'ABRACADABRA', 'PARALELEPIPEDO', 'BORBOLETA',
+  'TARTARUGA', 'CARAMELO', 'PIPOCA', 'GIRASSOL', 'CAMALEAO', 'HIPOPOTAMO', 'MELANCIA', 'COCORICO', 'ESTRELA', 'PANQUECA', 'TATU', 'BAMBOLE'];
+const PALINDROMOS = ['ARARA', 'OVO', 'RADAR', 'REVIVER', 'ANA', 'OSSO', 'SOMOS', 'REVER', 'MIRIM', 'SALAS'];
+const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+
+const GERADORES = {
+  conta() {
+    const a = sorteia(2, 9), b = sorteia(2, 9), c = sorteia(2, 9), menos = R() < .4 && a + 10 > b * c;
+    const certa = menos ? (a + 10) - b * c : a + b * c, x = menos ? a + 10 : a;
+    return { p: `Quanto é ${x} ${menos ? '−' : '+'} ${b} × ${c}?`, dica: 'Tem uma conta que vem antes da outra!',
+      porque: `Primeiro a multiplicação: ${b} × ${c} = ${b * c}. Depois ${x} ${menos ? '−' : '+'} ${b * c} = ${certa}.`,
+      monta(palco) { botoes(palco, opcoes(certa, menos ? [(x - b) * c, x - b - c, x * b - c, certa + 1] : [(x + b) * c, x + b + c, x * b + c, certa - 1]), String(certa)); } };
+  },
+  cor() {
+    const usadas = embaralha(CORES).slice(0, 4), alvo = sorteia(0, 3), pelaPalavra = R() < .35;
+    // cada botão tem a cor de um e o nome de outro
+    const nomes = usadas.map((_, i) => usadas[(i + 1) % 4][0]);
+    const certoIdx = pelaPalavra ? nomes.indexOf(usadas[alvo][0]) : alvo;
+    return { id: 'cor' + nomes + alvo + pelaPalavra, p: pelaPalavra ? `Toque na PALAVRA ${usadas[alvo][0]}.` : `Toque no botão ${usadas[alvo][0]}.`,
+      dica: pelaPalavra ? 'Agora vale o que está ESCRITO, não a cor.' : 'Não leia: olhe a COR do botão.',
+      porque: 'O cérebro lê a palavra antes de ver a cor. Isso tem nome: efeito Stroop!',
+      monta(palco) { const g = grade(palco); usadas.forEach(([, cor], i) => { const b = botao(g, nomes[i], () => i === certoIdx ? ganhar(b) : errar(b));
+        b.style.cssText = `background:${cor};color:#fff;font-size:21px`; }); } };
+  },
+  contar() {
+    const cat = um(Object.values(CATEGORIAS)), e = um(cat), k = sorteia(3, 7), naFala = R() < .5;
+    return { p: naFala ? `Quantos ${e} tem na tela?` : `Quantos ${e} tem na tela? ${e}`,
+      dica: naFala ? 'Conta TUDO... até o que eu estou segurando aqui embaixo!' : 'Conta TODOS... inclusive o da pergunta!',
+      porque: `${k} no quadro + 1 ${naFala ? 'comigo, aqui embaixo' : 'na pergunta'} = ${k + 1}!`,
+      monta(palco) {
+        for (let i = 0; i < k; i++) obj(palco, `<span style="font-size:46px">${e}</span>`, sorteia(2, 80), sorteia(0, 45));
+        botoes(palco, opcoes(k + 1, [k, k - 1, k + 2, k + 3]), String(k + 1), true);
+        if (naFala) setTimeout(() => fala(`Olha, eu tenho um ${e}!`), 50);
+      } };
+  },
+  sequencia() {
+    const tipo = sorteia(0, 4); let s, nome;
+    if (tipo === 0) { const a = sorteia(1, 20), d = sorteia(2, 9); s = [0, 1, 2, 3, 4, 5].map(i => a + i * d); nome = `Soma ${d} toda vez.`; }
+    else if (tipo === 1) { const a = sorteia(1, 5), m = sorteia(2, 3); s = [0, 1, 2, 3, 4, 5].map(i => a * m ** i); nome = `Multiplica por ${m} toda vez.`; }
+    else if (tipo === 2) { const a = sorteia(1, 4); s = [0, 1, 2, 3, 4, 5].map(i => (a + i) ** 2); nome = 'São os números ao quadrado: ' + (a + 5) + ' × ' + (a + 5) + '.'; }
+    else if (tipo === 3) { s = [sorteia(1, 3), sorteia(2, 4)]; while (s.length < 6) s.push(s.at(-1) + s.at(-2)); nome = 'Cada número é a soma dos dois anteriores.'; }
+    else { const a = sorteia(30, 60), d = sorteia(3, 8); s = [0, 1, 2, 3, 4, 5].map(i => a - i * d); nome = `Diminui ${d} toda vez.`; }
+    const certa = s[5], dif = Math.abs(s[5] - s[4]) || 1;
+    return { p: `Qual número vem depois?  ${s.slice(0, 5).join(', ')}, ...`, dica: 'Olha como um número vira o próximo.',
+      porque: `${nome} Por isso vem ${certa}.`,
+      monta(palco) { botoes(palco, opcoes(certa, [certa + 1, certa - 1, certa + dif, s[4] + 1, certa + 2]), String(certa)); } };
+  },
+  extremo() {
+    const decimal = R() < .5;
+    if (decimal) {
+      const vals = embaralha(['0,9', '0,15', '0,7', '0,25', '0,5', '0,35', '0,8', '0,125']).slice(0, 4);
+      const num = v => parseFloat(v.replace(',', '.')), maior = vals.reduce((a, b) => num(a) > num(b) ? a : b);
+      return { id: 'maior' + vals, p: 'Toque no MAIOR número.', dica: 'Número com mais algarismos depois da vírgula não é maior!',
+        porque: `Pensa em dinheiro: ${maior} são ${Math.round(num(maior) * 100)} centavos, mais que os outros.`, monta(palco) { botoes(palco, vals, maior); } };
+    }
+    const vals = [...new Set([sorteia(-20, -1), sorteia(0, 9), sorteia(10, 99), sorteia(-9, 30)])];
+    while (vals.length < 4) vals.push(sorteia(100, 200));
+    const menor = Math.min(...vals);
+    return { id: 'menor' + vals, p: 'Toque no MENOR número.', dica: 'Existem números menores que zero!',
+      porque: `Números negativos são menores que zero. O ${menor} é o menor.`, monta(palco) { botoes(palco, vals.map(String), String(menor)); } };
+  },
+  intruso() {
+    const [a, b] = embaralha(Object.keys(CATEGORIAS)), itens = embaralha(CATEGORIAS[a]).slice(0, 5), fora = um(CATEGORIAS[b]);
+    return { id: 'intruso' + itens + fora, p: 'Qual NÃO combina com os outros?', dica: `Quase todos são ${a}...`, porque: `Todos são ${a}, menos o ${fora}, que é de ${b}!`,
+      monta(palco) { const g = grade(palco, 3); embaralha([...itens, fora]).forEach(x => { const bt = botao(g, x, () => x === fora ? ganhar(bt) : errar(bt)); bt.style.fontSize = '44px'; }); } };
+  },
+  letras() {
+    const w = um(PALAVRAS), l = um([...new Set(w)]), n = [...w].filter(c => c === l).length;
+    return { p: `Quantas letras ${l} tem em ${w}?`, dica: 'Conta devagar, letra por letra.', porque: `${w} tem ${n} letra${n > 1 ? 's' : ''} ${l}.`,
+      monta(palco) { botoes(palco, opcoes(n, [n + 1, n - 1 || n + 2, n + 2, n + 3]), String(n)); } };
+  },
+  dias() {
+    const hoje = sorteia(0, 6), [exp, d] = um([['depois de amanhã', 2], ['anteontem', -2], ['amanhã', 1], ['ontem', -1], ['daqui a uma semana', 7], ['daqui a 10 dias', 10], ['daqui a 3 dias', 3]]);
+    const certo = DIAS[((hoje + d) % 7 + 7) % 7];
+    return { p: `Se hoje é ${DIAS[hoje]}, que dia ${d < 0 ? 'foi' : 'será'} ${exp}?`, dica: 'Vai contando nos dedos!',
+      porque: `De ${DIAS[hoje]}, ${d > 0 ? 'andando' : 'voltando'} ${Math.abs(d)} dia${Math.abs(d) > 1 ? 's' : ''}, cai na ${certo}.`.replace('na sábado', 'no sábado').replace('na domingo', 'no domingo'),
+      monta(palco) { botoes(palco, opcoes(certo, DIAS), certo); } };
+  },
+  palavra() {
+    if (R() < .5) {
+      const p = um(PALINDROMOS), outras = embaralha(PALAVRAS.filter(w => w.length < 9 && w !== [...w].reverse().join(''))).slice(0, 3);
+      return { id: 'pal' + p + outras, p: 'Qual palavra é igual lida de trás pra frente?', dica: 'Lê cada uma do fim pro começo.', porque: `${p} de trás pra frente continua ${p}!`,
+        monta(palco) { botoes(palco, [p, ...outras], p); } };
+    }
+    const ws = embaralha(PALAVRAS.filter(w => w.length < 9 && w !== [...w].reverse().join(''))).slice(0, 4), inv = [...ws[0]].reverse().join('');
+    return { id: 'inv' + ws, p: 'Toque na palavra escrita de trás pra frente.', dica: 'Uma delas está do avesso!', porque: `${inv} é ${ws[0]} ao contrário!`,
+      monta(palco) { botoes(palco, [inv, ...ws.slice(1)], inv); } };
+  },
+  reflexo() {
+    const cat = um(Object.values(CATEGORIAS)), [alvo, ...outros] = embaralha(cat), vel = (2.2 + R() * 1.6).toFixed(1);
+    return { p: `Pegue o ${alvo}!`, dica: 'Ele não para quieto... espera ele passar perto do dedo!', porque: 'Reflexo de goleiro! ⚡',
+      monta(palco) {
+        const coisas = [alvo, ...outros.slice(0, 2)];
+        coisas.forEach((e, i) => { const o = obj(palco, `<span style="font-size:60px">${e}</span>`, 5, 5, el => i === 0 ? ganhar(el) : errar(el));
+          o.classList.add('voa'); o.style.animationDuration = (vel * (1 + i * .35)) + 's'; o.style.animationDelay = (-i * 1.1) + 's'; });
+      } };
+  },
+};
+
+// ---------- charadas escritas pela IA (Claude), sorteadas sem repetir até acabar ----------
+// [pergunta, certa, [erradas], por quê]
+const CHARADAS = [
+  ['Quantos animais de cada espécie Moisés levou na arca?', 'Nenhum', ['1', '2', '7'], 'Quem construiu a arca foi Noé, não Moisés!'],
+  ['O que é que, quanto mais seca, mais molhada fica?', 'Toalha', ['Esponja', 'Roupa', 'Chão'], 'A toalha seca você e fica molhada.'],
+  ['O que tem dentes mas não morde?', 'Pente', ['Tubarão', 'Cachorro', 'Bebê'], 'O pente tem um monte de dentes e não morde ninguém.'],
+  ['O que sobe e desce sem sair do lugar?', 'Escada', ['Elevador', 'Avião', 'Balão'], 'A escada fica parada. Quem sobe e desce é você!'],
+  ['Um avião cai bem na divisa do Brasil com a Argentina. Onde enterram os sobreviventes?', 'Em lugar nenhum', ['No Brasil', 'Na Argentina', 'Na divisa'], 'Sobrevivente não se enterra! 😅'],
+  ['O que tem cabeça e pé, mas não tem corpo?', 'Cama', ['Cobra', 'Prego', 'Mesa'], 'A cama tem cabeceira e pé, e nenhum corpo.'],
+  ['Você tem uma vela, uma lamparina e um fogão a lenha. O que acende primeiro?', 'O fósforo', ['A vela', 'O fogão', 'A lamparina'], 'Sem o fósforo, nada acende!'],
+  ['O que está bem no meio do ovo?', 'A letra V', ['A gema', 'A clara', 'Um pintinho'], 'O-V-O: a letra do meio é o V!'],
+  ['Quantas vezes dá para tirar 2 de 10?', 'Uma', ['Cinco', 'Duas', 'Dez'], 'Depois da primeira vez já não é mais 10, é 8!'],
+  ['O que enche uma sala inteira sem ocupar espaço nenhum?', 'A luz', ['O ar', 'A água', 'Bexigas'], 'Acende a luz e ela enche a sala toda.'],
+  ['O que anda com os pés na cabeça?', 'Piolho', ['Equilibrista', 'Macaco', 'Chapéu'], 'O piolho passeia pela cabeça da gente!'],
+  ['O que tem pescoço mas não tem cabeça?', 'Garrafa', ['Girafa', 'Cisne', 'Camiseta'], 'A garrafa tem gargalo, o "pescoço", e nada de cabeça.'],
+  ['O que tem coroa mas não é rei?', 'Abacaxi', ['Princesa', 'Dente', 'Galo'], 'O abacaxi usa uma coroa de folhas! 👑'],
+  ['O que é cheio de buracos e mesmo assim segura água?', 'Esponja', ['Peneira', 'Balde', 'Copo'], 'A esponja é cheia de buraquinhos e guarda água.'],
+  ['Quanto é a metade de 2 + 2?', '3', ['2', '4', '1'], 'A metade de 2 é 1. Depois 1 + 2 = 3.'],
+  ['Um tijolo pesa 1 kg mais meio tijolo. Quanto pesa um tijolo inteiro?', '2 kg', ['1,5 kg', '1 kg', '3 kg'], 'Se meio tijolo pesa 1 kg, o tijolo inteiro pesa 2 kg.'],
+  ['Numa corrida, você passa o segundo colocado. Em que lugar você fica?', 'Segundo', ['Primeiro', 'Terceiro', 'Último'], 'Você pegou o lugar dele: o segundo!'],
+  ['Numa corrida, você passa o último colocado. Em que lugar você fica?', 'Impossível', ['Último', 'Penúltimo', 'Primeiro'], 'Ninguém passa o último: ele está atrás de todo mundo!'],
+  ['O que nasce grande e morre pequeno?', 'Lápis', ['Árvore', 'Pessoa', 'Sol'], 'De tanto apontar, o lápis fica pequenininho.'],
+  ['O que dá muitas voltas e não sai do lugar?', 'Ponteiro do relógio', ['Bicicleta', 'Avião', 'Trem'], 'O ponteiro gira o dia inteiro, sempre no relógio.'],
+  ['O que tem olho mas não enxerga?', 'Agulha', ['Pirata', 'Gato', 'Coruja'], 'O "olho" da agulha é o furinho da linha.'],
+  ['3 gatos pegam 3 ratos em 3 minutos. Quantos gatos pegam 100 ratos em 100 minutos?', '3', ['100', '33', '300'], 'Cada gato pega 1 rato a cada 3 minutos. Os mesmos 3 gatos dão conta!'],
+  ['Um homem chegou na sexta, ficou 3 dias e voltou na sexta. Como?', 'O cavalo se chama Sexta', ['Ele mentiu', 'Ficou 7 dias', 'Foi de avião'], 'Ele foi montado no cavalo chamado Sexta-feira! 🐴'],
+  ['O que você quebra sem nem encostar?', 'Uma promessa', ['Um vidro', 'Um ovo', 'Um prato'], 'Promessa se quebra sem encostar a mão.'],
+  ['O que é seu, mas os outros usam mais do que você?', 'Seu nome', ['Sua roupa', 'Seu celular', 'Sua casa'], 'Todo mundo te chama pelo nome!'],
+  ['O que sobe quando a chuva desce?', 'Guarda-chuva', ['Nuvem', 'Sol', 'Rio'], 'Começou a chover, todo mundo levanta o guarda-chuva. ☂️'],
+  ['Quantos meses do ano têm 31 dias?', '7', ['6', '5', '12'], 'Janeiro, março, maio, julho, agosto, outubro e dezembro: 7.'],
+  ['Qual é a cor do cavalo branco de Napoleão?', 'Branco', ['Preto', 'Marrom', 'Cinza'], 'A resposta estava na pergunta: branco!'],
+  ['Um pastor tem 15 ovelhas. Todas fugiram, menos 9. Quantas ficaram?', '9', ['6', '15', '0'], '"Todas menos 9" fugiram: ficaram 9.'],
+  ['Uma galinha e meia bota um ovo e meio em um dia e meio. Quantos ovos uma galinha bota em 3 dias?', '2', ['3', '1', '6'], 'Uma galinha bota 1 ovo a cada dia e meio. Em 3 dias, 2 ovos.'],
+  ['O que tem asa mas não voa, e tem bico mas não bica?', 'Bule', ['Pinguim', 'Avião', 'Galinha'], 'O bule tem asa (a alça) e bico!'],
+  ['Qual número, virado de cabeça pra baixo, fica 3 a mais?', '6', ['9', '3', '8'], 'O 6 virado vira 9: 3 a mais!'],
+  ['Por que o livro de matemática ficou triste?', 'Tinha muitos problemas', ['Perdeu a capa', 'Ninguém leu', 'Rasgou'], 'Livro de matemática é cheio de problemas! 😄'],
+  ['Qual é o fim de tudo?', 'A letra O', ['O nada', 'O infinito', 'O último dia'], 'TUDO termina com a letra O! 😉'],
+  ['Onde o Natal vem antes do Ano Novo?', 'Em todo lugar', ['Só no Brasil', 'Na Europa', 'Em lugar nenhum'], 'O Natal é dia 25 de dezembro, antes do Ano Novo em todo lugar.'],
+  ['O que você segura com a mão esquerda mas nunca com a direita?', 'Seu cotovelo direito', ['Uma bola', 'Um lápis', 'Um copo'], 'Tenta segurar o cotovelo direito com a mão direita... não dá!'],
+  ['Quantos números 9 aparecem de 1 a 100?', '20', ['10', '11', '19'], '9, 19... 89 dão 9; de 90 a 99 são mais 11 (o 99 tem dois). Total: 20!'],
+  ['Quem fala todas as línguas do mundo?', 'O eco', ['O tradutor', 'O papagaio', 'O professor'], 'O eco repete qualquer língua!'],
+  ['O que entra na água e não se molha?', 'A sombra', ['O peixe', 'O pato', 'A pedra'], 'A sombra entra na água e continua sequinha.'],
+  ['Quantas patas têm 3 patos?', '6', ['3', '12', '9'], 'Cada pato tem 2 patas: 3 × 2 = 6.'],
+  ['Pedro tem 4 irmãs, e cada irmã tem 1 irmão. Quantos filhos tem a família?', '5', ['8', '9', '6'], 'O irmão de todas elas é o próprio Pedro: 4 + 1 = 5.'],
+  ['O que dá um pulo e se veste de noiva?', 'Pipoca', ['Coelho', 'Sapo', 'Canguru'], 'O milho pula e fica branquinho! 🍿'],
+  ['Quanto pesa uma tonelada de penas?', '1 tonelada', ['Quase nada', '1 kg', '100 kg'], 'Tonelada é tonelada, seja de pena ou de ferro.'],
+  ['Você tem 3 maçãs e tira 2. Com quantas você fica?', '2', ['1', '3', '0'], 'Você TIROU 2... então são suas! 🍎'],
+  ['Você dirige um ônibus. Sobem 5 pessoas e descem 2. Quem é o motorista?', 'Você', ['O cobrador', 'Ninguém', 'O dono'], 'A primeira frase diz: VOCÊ dirige o ônibus!'],
+  ['O que vai e vem sem sair do lugar?', 'A porta', ['O vento', 'A onda', 'O trem'], 'A porta abre e fecha, e continua no mesmo lugar.'],
+  ['Onde o mar não tem água?', 'No mapa', ['No deserto', 'No céu', 'No sonho'], 'No mapa tem mar desenhado, mas sem água!'],
+  ['O que é que fica mais molhado quanto mais chove?', 'O chão', ['O guarda-chuva fechado', 'O sol', 'A nuvem'], 'Quanto mais chuva, mais o chão encharca.'],
+  ['Qual é o animal que tem cara de gato, pata de gato, rabo de gato, mas não é gato?', 'A gata', ['O leão', 'O tigre', 'A onça'], 'É a gata! 🐱'],
+      ['O que é que tem chapéu mas não tem cabeça?', 'Cogumelo', ['Palhaço', 'Boneco', 'Cowboy'], 'O cogumelo tem um "chapéu" em cima! 🍄'],
+  ['O que é que corre mas não tem pernas?', 'O rio', ['A cobra', 'O peixe', 'A tartaruga'], 'O rio corre o tempo todo sem perna nenhuma.'],
+  ];
+const DICAS_CHARADA = ['Lê de novo, palavra por palavra.', 'A resposta óbvia é pegadinha!', 'Pensa no sentido engraçado das palavras.', 'Tem uma brincadeira escondida na pergunta.'];
+
+function charadaFase(i) {
+  const [p, certa, erradas, porque] = CHARADAS[i];
+  return { p, dica: um(DICAS_CHARADA), porque, monta(palco) { botoes(palco, [certa, ...erradas], certa); } };
+}
+
+// ---------- qual fase vem: mistura fase feita à mão, charada e gerada, sem repetir ----------
+let nivel = ler('nivel', 1), recorde = ler('recorde', 0), estrelasTotal = ler('estrelas', 0), historico = ler('hist', []);
+let vistas = ler('vistas', []), ultimoTipo = '', specAtual = null, fase = null;
+let terminou = false, errosNaFase = 0, usouDica = false, seguidas = 0, somLigado = ler('som', true);
+let limpezas = [];
+const cronometro = id => limpezas.push(() => clearInterval(id));
+
+function tirarDoBaralho(nome, total) {
+  let b = ler(nome, []);
+  if (!b.length) b = embaralha([...Array(total).keys()]);
+  const i = b.pop(); guardar(nome, b); return i;
+}
+function sortearSpec() {
+  R = Math.random;
+  const x = R(), s = Math.floor(R() * 2 ** 31);
+  if (x < .25) return { k: 'h', i: tirarDoBaralho('baralhoFases', FASES.length), s };
+  if (x < .5) return { k: 'c', i: tirarDoBaralho('baralhoCharadas', CHARADAS.length), s };
+  const tipos = Object.keys(GERADORES).filter(t => t !== ultimoTipo);
+  return { k: 'g', t: um(tipos), s };
+}
+function criarFase(spec) {
+  R = rng(spec.s);
+  if (spec.k === 'h') return FASES[spec.i];
+  if (spec.k === 'c') return charadaFase(spec.i);
+  return GERADORES[spec.t]();
+}
+function proximaFase() {
+  // tenta até achar uma pergunta que esta pessoa ainda não viu
+  for (let tentativa = 0; tentativa < 25; tentativa++) {
+    const spec = sortearSpec(), f = criarFase(spec), assinatura = spec.k === 'g' ? (f.id || f.p) : spec.k + spec.i;
+    if (!vistas.includes(assinatura) || tentativa === 24) {
+      vistas.push(assinatura); if (vistas.length > 400) vistas = vistas.slice(-400); guardar('vistas', vistas);
+      return spec;
+    }
+  }
+}
+
+// ---------- telas ----------
+function mostrar(id) { document.querySelectorAll('.tela').forEach(t => t.classList.toggle('ativa', t.id === id)); if (id === 'inicio') atualizaInicio(); }
+function atualizaInicio() {
+  $('recordeInicio').textContent = recorde ? `🏆 Recorde: nível ${recorde}  ·  ⭐ ${estrelasTotal}` : 'Cada partida é diferente!';
+  $('jogar').textContent = nivel > 1 ? `CONTINUAR (nível ${nivel})` : 'JOGAR';
+}
+
+// ---------- peças das fases ----------
+function obj(palco, html, x, y, aoTocar) {
+  const d = document.createElement('div'); d.className = 'obj'; d.innerHTML = html;
+  d.style.left = x + '%'; d.style.top = y + '%'; d.style.setProperty('--i', palco.children.length);
+  if (aoTocar) d.onclick = () => aoTocar(d);
+  palco.appendChild(d); return d;
+}
+function grade(palco, colunas = 2, embaixo = false) {
+  const g = document.createElement('div'); g.className = 'grade';
+  g.style.gridTemplateColumns = `repeat(${colunas},1fr)`;
+  if (embaixo) g.style.cssText += ';position:absolute;bottom:0;left:0;right:0';
+  palco.appendChild(g); return g;
+}
+function botao(g, txt, aoTocar) {
+  const b = document.createElement('button'); b.className = 'opc'; b.textContent = txt; b.onclick = aoTocar;
+  if (String(txt).length > 9) b.style.fontSize = '19px'; else if (String(txt).length > 6) b.style.fontSize = '23px';
+  g.appendChild(b); return b;
+}
+// alternativas sempre embaralhadas, para ninguém decorar a posição
+function botoes(palco, ops, certo, embaixo = false) {
+  const g = grade(palco, embaixo ? 4 : 2, embaixo);
+  embaralha(ops).forEach(o => { const b = botao(g, o, () => o === certo ? ganhar(b) : errar(b)); });
+}
+// encostou: os dois se tocam (com folga), para não exigir pontaria de criança
+function perto(a, b, folga) {
+  const r1 = a.getBoundingClientRect(), r2 = b.getBoundingClientRect();
+  return r1.left < r2.right + folga && r1.right > r2.left - folga && r1.top < r2.bottom && r1.bottom > r2.top - folga;
+}
+function arrastar(el, aoSoltar) {
+  el.onpointerdown = e => {
+    const palco = $('palco').getBoundingClientRect(), r = el.getBoundingClientRect();
+    const dx = e.clientX - r.left, dy = e.clientY - r.top;
+    try { el.setPointerCapture(e.pointerId); } catch {}
+    el.style.zIndex = 2; el.style.transform = 'scale(1.1)';
+    el.onpointermove = m => { el.style.left = (m.clientX - palco.left - dx) + 'px'; el.style.top = (m.clientY - palco.top - dy) + 'px'; };
+    el.onpointerup = () => { el.onpointermove = el.onpointerup = null; el.style.transform = ''; aoSoltar(); };
+  };
+}
+
+// ---------- som e voz ----------
+let audio;
+function som(notas, tipo = 'triangle', vol = .18) {
+  if (!somLigado) return;
+  try {
+    audio = audio || new AudioContext();
+    notas.forEach(([f, quando, dur = .22]) => { const o = audio.createOscillator(), g = audio.createGain();
+      o.type = tipo; o.frequency.value = f; o.connect(g); g.connect(audio.destination);
+      const t = audio.currentTime + quando; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+      o.start(t); o.stop(t + dur + .02); });
+  } catch {}
+}
+const clique = () => som([[660, 0, .06]], 'sine', .1);
+const somErro = () => som([[240, 0, .15], [170, .12, .25]], 'square', .08);
+const somAcerto = () => som([[523, 0], [659, .1], [784, .2], [1047, .3, .4]]);
+function vibrar(p) { try { navigator.vibrate && navigator.vibrate(p); } catch {} }
+function atualizaSom() { $('somInicio').textContent = somLigado ? '🔊 Som e voz' : '🔇 Sem som'; if (!somLigado) try { speechSynthesis.cancel(); } catch {} }
+// a Chaminha fala em voz alta (voz do próprio celular, sem custo)
+function falarAlto(txt) {
+  if (!somLigado || !('speechSynthesis' in window)) return;
+  try {
+    const limpo = txt.replace(/\p{Extended_Pictographic}/gu, '').trim();
+    if (!limpo) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(limpo); u.lang = 'pt-BR'; u.pitch = 1.6; u.rate = 1.08;
+    const voz = speechSynthesis.getVoices().find(v => v.lang === 'pt-BR'); if (voz) u.voice = voz;
+    speechSynthesis.speak(u);
+  } catch {}
+}
+
+// ---------- falas ----------
+function fala(txt, feliz = true) {
+  const b = $('balao'); b.textContent = txt; b.classList.remove('novo'); void b.offsetWidth; b.classList.add('novo');
+  $('mascote').innerHTML = chaminha(64, undefined, undefined, feliz);
+  falarAlto(txt);
+}
+const ERROS = ['Quase! Pensa diferente 😅', 'Hmm, não é isso...', 'Opa! Tenta de novo!', 'Esse não! Olha com calma.', 'Pegadinha! 😜', 'Caiu direitinho! 🤭'];
+const BOAS_VINDAS = ['Lá vem pegadinha...', 'Essa é das boas!', 'Pensa fora da caixinha!', 'Duvido de primeira! 😏', 'Atenção aos detalhes...', 'Essa é nova, hein!', 'Cuidado com essa!'];
+
+function errar(el) {
+  if (terminou) return;
+  somErro(); vibrar(120); errosNaFase++; seguidas = 0; mostraCombo();
+  const alvo = el instanceof Element ? el : $('card');
+  alvo.classList.remove('errado'); void alvo.offsetWidth; alvo.classList.add('errado');
+  setTimeout(() => alvo.classList.remove('errado'), 800);
+  fala(errosNaFase >= 3 ? 'Travou? Pede uma 💡 ou desafia um amigo no 📲!' : ERROS[Math.floor(Math.random() * ERROS.length)], false);
+}
+function mostraCombo() { const c = $('combo'); c.style.display = seguidas >= 2 ? 'block' : 'none'; c.textContent = `🔥 ${seguidas} seguidas!`; }
+function faiscas(x, y) {
+  const emojis = ['✨', '🔥', '⭐', '💛'];
+  for (let i = 0; i < 22; i++) {
+    const s = document.createElement('span'); s.className = 'faisca'; s.textContent = emojis[i % emojis.length];
+    const ang = Math.random() * Math.PI * 2, dist = 90 + Math.random() * 160;
+    s.style.left = x + 'px'; s.style.top = y + 'px';
+    s.style.setProperty('--x', Math.cos(ang) * dist + 'px'); s.style.setProperty('--y', Math.sin(ang) * dist + 'px');
+    s.style.setProperty('--r', (Math.random() * 360) + 'deg');
+    document.body.appendChild(s); setTimeout(() => s.remove(), 1200);
+  }
+}
+function ganhar(el) {
+  if (terminou) return; terminou = true;
+  somAcerto(); vibrar([30, 40, 30]);
+  const alvo = el instanceof Element ? el : $('card');
+  alvo.classList.add('certo');
+  const r = alvo.getBoundingClientRect(); faiscas(r.left + r.width / 2, r.top + r.height / 2);
+  $('mascote').classList.add('pulo'); setTimeout(() => $('mascote').classList.remove('pulo'), 1000);
+  const est = usouDica ? 1 : errosNaFase === 0 ? 3 : errosNaFase <= 2 ? 2 : 1;
+  seguidas = errosNaFase || usouDica ? 0 : seguidas + 1; mostraCombo();
+  historico.push(usouDica ? '💡' : errosNaFase ? '🟨' : '🟩'); historico = historico.slice(-10);
+  estrelasTotal += est; recorde = Math.max(recorde, nivel); nivel++;
+  guardar('nivel', nivel); guardar('recorde', recorde); guardar('estrelas', estrelasTotal); guardar('hist', historico);
+  const marco = (nivel - 1) % 10 === 0;
+  setTimeout(() => {
+    $('vitMascote').innerHTML = chaminha(100);
+    $('vitTexto').textContent = marco ? `Nível ${nivel - 1}! 🏆` : seguidas >= 3 ? `${seguidas} seguidas! 🔥` : errosNaFase ? 'Acertou!' : 'De primeira! 🤯';
+    $('estrelas').innerHTML = [1, 2, 3].map(i => `<span class="${i > est ? 'apagada' : ''}">⭐</span>`).join('');
+    $('porque').innerHTML = `<b>POR QUÊ?</b>${textoFase(fase.porque)}`;
+    $('placar').textContent = marco ? historico.join('') : '';
+    $('compartilhar').style.display = marco ? '' : 'none';
+    $('compartilhar').onclick = () => compartilhar(`🔥 Cheguei no nível ${nivel - 1} da Pegadinha da Chaminha! ⭐ ${estrelasTotal}\n${historico.join('')}\nCada partida tem perguntas diferentes. Duvido você chegar mais longe:`);
+    $('proxima').textContent = 'Próxima ➜';
+    $('vitoria').style.display = 'flex'; $('proxima').focus();
+  }, 650);
+}
+async function compartilhar(texto, url = location.origin + location.pathname) {
+  try { if (navigator.share) { await navigator.share({ text: texto, url }); return; } } catch { return; }
+  location.href = 'https://wa.me/?text=' + encodeURIComponent(texto + '\n' + url);
+}
+
+const textoFase = t => t.replaceAll('{N}', nivel);
+function carregar(spec) {
+  limpezas.forEach(f => f()); limpezas = [];
+  terminou = false; errosNaFase = 0; usouDica = false;
+  specAtual = spec; fase = criarFase(spec); if (spec.k === 'g') ultimoTipo = spec.t;
+  const palco = $('palco');
+  palco.innerHTML = ''; palco.style.background = ''; palco.onclick = null;
+  $('card').classList.remove('certo');
+  $('pergunta').onclick = null; $('nivel').onclick = null; $('pergunta').textContent = textoFase(fase.p);
+  $('nivel').textContent = 'NÍVEL ' + nivel;
+  $('barraJogo').style.width = ((nivel - 1) % 10 * 10) + '%';
+  fala(nivel === 1 ? 'Oi! Eu sou a Chaminha. Aqui nada é o que parece! 🔥' : BOAS_VINDAS[Math.floor(Math.random() * BOAS_VINDAS.length)]);
+  fase.monta(palco);
+}
+
+// ---------- botões ----------
+$('jogar').onclick = () => { clique(); carregar(proximaFase()); mostrar('jogo'); };
+$('recomecar').onclick = () => { clique(); nivel = 1; historico = []; guardar('nivel', 1); guardar('hist', []); carregar(proximaFase()); mostrar('jogo'); };
+$('abrirMapa').onclick = () => { clique(); limpezas.forEach(f => f()); limpezas = []; mostrar('inicio'); };
+$('somInicio').onclick = () => { somLigado = !somLigado; guardar('som', somLigado); atualizaSom(); clique(); };
+$('dica').onclick = () => { clique(); usouDica = true; fala('💡 ' + textoFase(fase.dica)); };
+$('desafio').onclick = () => {
+  clique();
+  const q = btoa(JSON.stringify({ ...specAtual, n: nivel }));
+  compartilhar(`🔥 Travei no nível ${nivel} da Pegadinha da Chaminha: "${$('pergunta').textContent}"\nDuvido você passar!`,
+    location.origin + location.pathname + '?q=' + encodeURIComponent(q));
+};
+$('proxima').onclick = () => { clique(); $('vitoria').style.display = 'none'; carregar(proximaFase()); };
+
+// ---------- abertura ----------
+$('logoChama').innerHTML = chaminha(150);
+atualizaSom(); atualizaInicio();
+for (let i = 0; i < 18; i++) {
+  const b = document.createElement('i');
+  b.style.left = Math.random() * 100 + '%'; b.style.animationDuration = (6 + Math.random() * 8) + 's';
+  b.style.animationDelay = (-Math.random() * 10) + 's'; b.style.setProperty('--dx', (Math.random() * 80 - 40) + 'px');
+  $('brasas').appendChild(b);
+}
+// link de desafio: ?q=... abre a mesma pergunta que o amigo recebeu
+try {
+  const q = new URLSearchParams(location.search).get('q');
+  if (q) {
+    const spec = JSON.parse(atob(q));
+    const valido = (spec.k === 'h' && FASES[spec.i]) || (spec.k === 'c' && CHARADAS[spec.i]) || (spec.k === 'g' && GERADORES[spec.t]);
+    if (valido && Number.isFinite(spec.s)) {
+      carregar(spec); mostrar('jogo'); fala('Te desafiaram! Mostra que você consegue! 💪');
+    }
+  }
+} catch {}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
