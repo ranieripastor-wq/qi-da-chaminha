@@ -82,6 +82,26 @@
   #balao::before { content:""; position:absolute; left:-10px; bottom:18px; border:10px solid transparent; border-right-color:#fff; border-left:0; }
   #balao.novo { animation:pop .3s; }
   @keyframes pop { from { transform:scale(.85); } }
+  /* abertura: a Chaminha acende, pula e o nome aparece */
+  #abertura { position:fixed; inset:0; z-index:20; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    background:radial-gradient(circle at 50% 42%, #7A2E0C 0%, #3A1606 55%, #1E0B03 100%); cursor:pointer; transition:opacity .45s, visibility .45s; }
+  #abertura.fora { opacity:0; visibility:hidden; }
+  #abertura .logoGrande { width:min(86vw, 340px); animation:acende .9s cubic-bezier(.3,1.6,.5,1) both; filter:drop-shadow(0 0 26px rgba(255,160,40,.6)); }
+  #abertura .logoGrande .mascote { animation:flutua 2.4s ease-in-out .9s infinite; transform-box:fill-box; transform-origin:center; }
+  .logo { margin:0; width:min(78vw, 300px); line-height:0; text-shadow:none; } .logo svg, .logoGrande svg { width:100%; height:auto; display:block; }
+  .logo .mascote { animation:flutua 3s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .selo { width:44px; flex-shrink:0; border-radius:10px; overflow:hidden; background:#fff; box-shadow:0 3px 0 #2E6B3A; text-align:center; line-height:1; }
+  .selo i { display:block; background:var(--vermelho); color:#fff; font-style:normal; font-size:11px; font-weight:800; padding:3px 0; }
+  .selo b { display:block; font-size:22px; color:var(--tinta); padding:3px 0 4px; }
+  #abertura .brilho { position:absolute; width:260px; height:260px; border-radius:50%; top:calc(42% - 130px);
+    background:radial-gradient(circle, rgba(255,190,60,.45), transparent 70%); animation:respira 1.6s ease-in-out infinite; }
+  #abertura p { color:#FFE3A8; font-size:17px; margin:8px 0 0; animation:entra .5s 1s both; }
+  #abertura .carrega { width:140px; height:8px; border-radius:8px; background:#4A2410; overflow:hidden; margin-top:18px; animation:entra .4s 1s both; }
+  #abertura .carrega b { display:block; height:100%; background:linear-gradient(90deg,#FFC928,#FF8A1F); animation:enche 1.6s .9s ease-out both; }
+  @keyframes acende { from { transform:scale(0) translateY(40px); opacity:0; } 60% { opacity:1; } }
+  @keyframes entraTit { from { transform:scale(.4); opacity:0; } }
+  @keyframes respira { 50% { transform:scale(1.15); opacity:.7; } }
+  @keyframes enche { from { width:0; } to { width:100%; } }
 
   /* vitória */
   #vitoria { position:fixed; inset:0; background:rgba(43,20,8,.88); display:none; align-items:center; justify-content:center; z-index:5; padding:20px; }
@@ -131,6 +151,7 @@
   .topo { width:100%; display:flex; justify-content:space-between; align-items:center; }
   .pilula { background:#3A1E10; color:#FFE3A8; border-radius:999px; padding:4px 12px; font-weight:800; font-size:16px; }
   .btn.grande small { display:block; font-size:15px; font-weight:700; opacity:.75; }
+  #dueloMenu > .btn { width:100%; padding-left:16px; padding-right:16px; } #dueloMenu > .btn.grande { font-size:24px !important; }
   .menu { width:100%; max-width:380px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .tile { display:flex; flex-direction:column; align-items:center; gap:0; padding:10px 6px; font-size:19px; line-height:1.1; border-radius:18px; }
   .tile i { font-style:normal; font-size:30px; } .tile small { font-size:13px; font-weight:700; opacity:.7; }
@@ -204,12 +225,13 @@
 </style>
 </head>
 <body>
+<div id="abertura" aria-hidden="true"><div class="brilho"></div><div class="logoGrande" id="aberturaLogo"></div>
+  <p>Acendendo o seu cérebro...</p><div class="carrega"><b></b></div></div>
 <div class="brasas" id="brasas" aria-hidden="true"></div>
 
 <section class="tela ativa" id="inicio">
   <div class="topo"><span class="pilula" id="sequencia"></span><button class="btn fantasma" id="somInicio" aria-label="Ligar ou desligar o som">🔊</button></div>
-  <div style="display:flex;align-items:center;gap:12px"><div class="flutua" id="logoChama"></div>
-  <h1 style="font-size:54px;text-align:left;margin:0">QI<small>da Chaminha</small></h1></div>
+  <h1 class="logo" id="logo" aria-label="QI da Chaminha"></h1>
   <p style="font-size:16px">Descubra seu QI e dispute com todo o Brasil</p>
   <button class="btn grande" id="testeQI">🧠 TESTE DE QI<small>20 perguntas · uns 7 minutos</small></button>
   <button class="btn diaBtn" id="abrirDiario"></button>
@@ -224,6 +246,7 @@
   <div class="cartaoNivel" id="cartaoNivel"></div>
   <div id="recordeInicio" style="color:#FFE3A8;font-size:15px;font-weight:700"></div>
   <button class="btn fantasma" id="recomecar" style="font-size:13px;min-height:36px;border-width:2px">Recomeçar pegadinhas do nível 1</button>
+  <div id="rodape" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center"><a href="privacidade.html" style="color:#B89878;font-size:13px">Política de privacidade</a></div>
 </section>
 
 
@@ -242,7 +265,7 @@
     <button class="btn" id="voltarDuelo" aria-label="Voltar para o início">◀</button>
     <h2 style="margin:0;font-size:26px">Duelo e quiz</h2>
   </header>
-  <div id="dueloMenu" style="display:flex;flex-direction:column;gap:12px">
+  <div id="dueloMenu" style="display:flex;flex-direction:column;gap:20px;padding-bottom:16px">
     <div style="display:flex;justify-content:center;align-items:flex-end;gap:8px" id="dueloHeroi"></div>
     <div class="painel"><b>1. Escolha o assunto</b><div class="chips" id="catLista"></div></div>
     <button class="btn grande" id="criarDueloBtn" style="font-size:24px">⚔️ Criar duelo ao vivo<small>de 2 a 20 pessoas · Time Chaminha × Time Gelinho</small></button>
@@ -406,6 +429,29 @@ function chaminha(t = 90, cor1 = '#FFC928', cor2 = '#FF8A1F', feliz = true, dorm
     ${olhos}
     <ellipse cx="32" cy="92" rx="5" ry="3" fill="#F2542D" opacity=".35"/><ellipse cx="68" cy="92" rx="5" ry="3" fill="#F2542D" opacity=".35"/>
     <path d="${feliz ? 'M40 92 Q50 102 60 92' : 'M42 98 Q50 92 58 98'}" stroke="#3A1A0A" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+// logo oficial (moderna): Chaminha em degradê, sem contorno preto, e o nome em duas linhas ao lado
+function logoQI() {
+  const f = 'font-family="\'Baloo 2\', \'Trebuchet MS\', sans-serif"';
+  return `<svg viewBox="0 0 300 150" role="img" aria-label="QI da Chaminha">
+    <defs>
+      <linearGradient id="lgFogo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFB224"/><stop offset=".55" stop-color="#FF6A1A"/><stop offset="1" stop-color="#E8361C"/></linearGradient>
+      <linearGradient id="lgMiolo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF3B0"/><stop offset="1" stop-color="#FFC928"/></linearGradient>
+      <linearGradient id="lgQI" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD43B"/><stop offset="1" stop-color="#FF7A1A"/></linearGradient>
+      <radialGradient id="lgAura"><stop offset="0" stop-color="#FF8A1F" stop-opacity=".45"/><stop offset="1" stop-color="#FF8A1F" stop-opacity="0"/></radialGradient>
+    </defs>
+    <circle cx="62" cy="80" r="62" fill="url(#lgAura)"/>
+    <g class="mascote"><g transform="translate(12 6) scale(1.02)">
+      <path d="M50 4 C62 30 92 44 88 78 C85 104 66 116 50 116 C34 116 15 104 12 78 C9 54 30 46 34 24 C42 36 46 22 50 4Z" fill="url(#lgFogo)"/>
+      <path d="M50 40 C58 58 74 66 72 86 C70 102 60 108 50 108 C40 108 30 102 28 86 C27 70 40 64 50 40Z" fill="url(#lgMiolo)"/>
+      <ellipse cx="40" cy="80" rx="4.6" ry="6" fill="#3A1A0A"/><ellipse cx="60" cy="80" rx="4.6" ry="6" fill="#3A1A0A"/>
+      <circle cx="41.6" cy="77.6" r="1.7" fill="#fff"/><circle cx="61.6" cy="77.6" r="1.7" fill="#fff"/>
+      <ellipse cx="31" cy="92" rx="5" ry="3" fill="#FF5A36" opacity=".45"/><ellipse cx="69" cy="92" rx="5" ry="3" fill="#FF5A36" opacity=".45"/>
+      <path d="M42 93 Q50 101 58 93" stroke="#3A1A0A" stroke-width="3.6" fill="none" stroke-linecap="round"/>
+      <path d="M30 40 C26 52 24 60 27 70" stroke="#fff" stroke-opacity=".5" stroke-width="4" fill="none" stroke-linecap="round"/></g></g>
+    <text x="124" y="92" font-size="104" font-weight="800" ${f} fill="url(#lgQI)" letter-spacing="-2">QI</text>
+    <text x="130" y="126" font-size="27" font-weight="700" ${f} fill="#FFE9C4" letter-spacing=".5">da Chaminha</text>
   </svg>`;
 }
 const vela = `<svg width="70" height="150" viewBox="0 0 70 150"><rect x="15" y="40" width="40" height="105" rx="6" fill="#F7E7C6" stroke="#3A1A0A" stroke-width="4"/><line x1="35" y1="40" x2="35" y2="22" stroke="#3A1A0A" stroke-width="4"/></svg>`;
@@ -922,7 +968,7 @@ function desenhaTeaser() {
 }
 function atualizaInicio() {
   const seq = ler('diaUlt', '') === hoje() || ler('diaUlt', '') === hoje(-1) ? ler('sequencia', 0) : 0;
-  $('sequencia').textContent = seq ? `🔥 ${seq} dia${seq > 1 ? 's' : ''} seguido${seq > 1 ? 's' : ''}` : '🔥 0 dias seguidos';
+  $('sequencia').textContent = seq ? `🔥 ${seq} dia${seq > 1 ? 's' : ''} seguido${seq > 1 ? 's' : ''}` : '🔥 Comece sua sequência';
   desenhaTeaser(); buscarRanking().then(desenhaTeaser);
   if (typeof desenhaBotaoDiario === 'function') desenhaBotaoDiario();
   $('cartaoNivel').innerHTML = htmlNivel();
@@ -1056,7 +1102,10 @@ function ganhar(el) {
     $('vitoria').style.display = 'flex'; $('proxima').focus();
   }, 650);
 }
-async function compartilhar(texto, url = location.origin + location.pathname) {
+// no app (assets locais) os links apontam para o site, que abre para quem não tem o app
+const SITE = location.hostname === 'appassets.androidplatform.net' ? 'https://ranieripastor-wq.github.io/qi-da-chaminha/' : location.origin + location.pathname;
+async function compartilhar(texto, url = SITE) {
+  if (window.QINative) return QINative.compartilhar(texto + '\n' + url);
   try { if (navigator.share) { await navigator.share({ text: texto, url }); return; } } catch { return; }
   location.href = 'https://wa.me/?text=' + encodeURIComponent(texto + '\n' + url);
 }
@@ -1321,12 +1370,17 @@ $('desafio').onclick = () => {
   clique();
   const q = btoa(JSON.stringify({ ...specAtual, n: nivel }));
   compartilhar(`🔥 Travei no nível ${nivel} das pegadinhas do QI da Chaminha: "${$('pergunta').textContent}"\nDuvido você passar!`,
-    location.origin + location.pathname + '?q=' + encodeURIComponent(q));
+    SITE + '?q=' + encodeURIComponent(q));
 };
 $('proxima').onclick = () => { clique(); $('vitoria').style.display = 'none'; carregar(proximaFase()); };
 
 // ---------- abertura ----------
-$('logoChama').innerHTML = chaminha(70); $('resMascote').innerHTML = chaminha(60);
+$('logo').innerHTML = logoQI();
+// abertura: toda vez que o app abre (no site, uma vez por visita); um toque pula
+{ const ab = $('abertura'), fecha = () => { ab.classList.add('fora'); setTimeout(() => ab.remove(), 500); };
+  let vista = false; try { vista = sessionStorage.getItem('abertura') === '1'; sessionStorage.setItem('abertura', '1'); } catch {}
+  if (vista) ab.remove();
+  else { $('aberturaLogo').innerHTML = logoQI(); ab.onclick = fecha; setTimeout(fecha, matchMedia('(prefers-reduced-motion: reduce)').matches ? 900 : 2700); } } $('resMascote').innerHTML = chaminha(60);
 atualizaSom(); atualizaInicio();
 for (let i = 0; i < 18; i++) {
   const b = document.createElement('i');
@@ -1353,6 +1407,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 <script src="arena.js"></script>
 <script src="adedonha.js"></script>
 <script src="diario.js"></script>
+<script src="anuncios.js"></script>
 <script>
 $('duelMini').innerHTML = chaminha(34) + gelinho(34);
 $('dueloHeroi').innerHTML = chaminha(80) + '<span style="font-size:34px;font-weight:800;color:var(--amarelo)">VS</span>' + gelinho(80);

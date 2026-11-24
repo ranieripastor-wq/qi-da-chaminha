@@ -91,11 +91,13 @@ function mostrarFimDiario(erro) {
   $('fimArena').style.display = 'flex';
 }
 
+// selo de calendário com o dia de hoje (o emoji 📅 mostra sempre "JUL 17")
+const seloDia = () => { const d = new Date(Date.now() - 3 * 3600e3); return `<span class="selo" aria-hidden="true"><i>${['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][d.getUTCMonth()]}</i><b>${d.getUTCDate()}</b></span>`; };
 function desenhaBotaoDiario() {
   const f = feitoHoje();
   $('abrirDiario').innerHTML = f?.fim
     ? `<span class="calend">✅</span><span>DESAFIO #${numDesafio()} FEITO<small>${f.ac}/10 · ${f.pos ? textoPos(f) + ' · ' : ''}volta em ${horasParaAmanha()}</small></span>`
-    : `<span class="calend">📅</span><span>DESAFIO DO DIA #${numDesafio()}<small>${f ? 'continue de onde parou' : '10 perguntas iguais para todo o Brasil'}</small></span>`;
+    : `${seloDia()}<span>DESAFIO DO DIA #${numDesafio()}<small>${f ? 'continue de onde parou' : '10 perguntas iguais para todo o Brasil'}</small></span>`;
   $('abrirDiario').classList.toggle('feito', !!f?.fim);
 }
 

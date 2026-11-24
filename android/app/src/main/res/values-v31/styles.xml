@@ -1,0 +1,11 @@
+<resources>
+    <!-- Android 12+: a tela de abertura do sistema mostra a Chaminha no fundo marrom do jogo -->
+    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">#2B1408</item>
+        <item name="android:colorAccent">#FFB21F</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowSplashScreenBackground">#2B1408</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/chama</item>
+    </style>
+</resources>

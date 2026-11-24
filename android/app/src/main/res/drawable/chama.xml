@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- a Chaminha (mesmo desenho do jogo, viewBox 100x120) centrada num ícone de 108x108 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group android:translateX="29" android:translateY="23" android:scaleX="0.5" android:scaleY="0.5">
+        <path android:fillColor="#FF8A1F" android:strokeColor="#3A1A0A" android:strokeWidth="4" android:pathData="M50 4 C62 30 92 44 88 78 C85 104 66 116 50 116 C34 116 15 104 12 78 C9 54 30 46 34 24 C42 36 46 22 50 4Z"/>
+        <path android:fillColor="#FFC928" android:pathData="M50 40 C58 58 74 66 72 86 C70 102 60 108 50 108 C40 108 30 102 28 86 C27 70 40 64 50 40Z"/>
+        <path android:fillColor="#3A1A0A" android:pathData="M35 80 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0Z M55 80 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0Z"/>
+        <path android:fillColor="#FFFFFF" android:pathData="M40.4 78 a1.6 1.6 0 1 0 3.2 0 a1.6 1.6 0 1 0 -3.2 0Z M60.4 78 a1.6 1.6 0 1 0 3.2 0 a1.6 1.6 0 1 0 -3.2 0Z"/>
+        <path android:fillColor="#59F2542D" android:pathData="M27 92 a5 3 0 1 0 10 0 a5 3 0 1 0 -10 0Z M63 92 a5 3 0 1 0 10 0 a5 3 0 1 0 -10 0Z"/>
+        <path android:strokeColor="#3A1A0A" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M40 92 Q50 102 60 92"/>
+    </group>
+</vector>

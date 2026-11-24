@@ -46,7 +46,7 @@ function abrirDuelo() {
     b.onclick = () => { clique(); lista.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x === b)); };
     lista.appendChild(b);
   });
-  $('dueloEspera').style.display = 'none'; $('dueloMenu').style.display = '';
+  $('dueloEspera').style.display = 'none'; $('dueloMenu').style.display = 'flex';
   $('dueloRecorde').textContent = `🏆 Vitórias em duelos: ${ler('vitorias', 0)}`;
   mostrar('duelo');
 }
@@ -228,7 +228,7 @@ async function criarDuelo(jogo = 'quiz') {
 function enviarConvite() {
   const a = arena; if (!a) return;
   compartilhar(a.jogo === 'adedonha' ? `🔤 ${a.jog[a.eu].nome} abriu uma ADEDONHA AO VIVO no QI da Chaminha!\nLetra sorteada, todo mundo escreve e quem terminar grita STOP. Até ${MAX_JOG} pessoas. Entra agora:` : `⚔️ ${a.jog[a.eu].nome} abriu um DUELO AO VIVO no QI da Chaminha! Tema: ${nomeCat(a.cat)}\n🔥 Time Chaminha × Time Gelinho ❄️ · até ${MAX_JOG} pessoas. Entra agora:`,
-    location.origin + location.pathname + '?duelo=' + a.codigo);
+    SITE + '?duelo=' + a.codigo);
 }
 function doConvidado(pid, m) {
   const a = arena; if (!a || !m) return;

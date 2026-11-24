@@ -1,0 +1,42 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.ranieri.qichaminha'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.ranieri.qichaminha'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName "1.0.0"
+    }
+    // Chave de envio à Play Store: fica fora do projeto, em E:/QIChaminha/chave (guardar cópia; sem ela não dá para atualizar o app).
+    def ass = new Properties(); def arq = file('E:/QIChaminha/chave/assinatura.properties')
+    if (arq.exists()) arq.withInputStream { ass.load(it) }
+    signingConfigs {
+        if (arq.exists()) envio { storeFile file(ass.arquivo); storePassword ass.senha; keyAlias ass.apelido; keyPassword ass.senha }
+    }
+    buildTypes {
+        // IDs de TESTE do Google no debug (clicar em anúncio real nos testes suspende a conta).
+        debug { manifestPlaceholders = [admobApp: 'ca-app-pub-3940256099942544~3347511713']
+            buildConfigField 'String', 'PREMIADO', '"ca-app-pub-3940256099942544/5224354917"'
+            buildConfigField 'String', 'INTERSTICIAL', '"ca-app-pub-3940256099942544/1033173712"' }
+        // shortcut: release ainda com os IDs de teste; trocar pelos do app QI da Chaminha no AdMob do Ranieri antes de publicar
+        release { if (arq.exists()) signingConfig signingConfigs.envio
+            manifestPlaceholders = [admobApp: 'ca-app-pub-3940256099942544~3347511713']
+            buildConfigField 'String', 'PREMIADO', '"ca-app-pub-3940256099942544/5224354917"'
+            buildConfigField 'String', 'INTERSTICIAL', '"ca-app-pub-3940256099942544/1033173712"' }
+    }
+    buildFeatures { buildConfig true }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+// copia o jogo (o mesmo do site) para dentro do app antes de cada build
+tasks.register('copiaJogo', Copy) {
+    from('../..') { include '*.html', '*.js', '*.png', 'manifest.webmanifest'; exclude 'sw.js' }
+    into 'src/main/assets/app'
+}
+preBuild.dependsOn 'copiaJogo'
+dependencies {
+    implementation 'androidx.webkit:webkit:1.14.0'
+    implementation 'com.google.android.gms:play-services-ads:25.5.0'
+    implementation 'com.google.android.ump:user-messaging-platform:4.0.0' // consentimento LGPD/GDPR
+}
