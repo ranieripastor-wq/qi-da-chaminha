@@ -31,7 +31,7 @@
   .btn.fantasma { background:transparent; color:var(--amarelo); box-shadow:none; border:3px solid var(--amarelo); }
 
   /* abertura */
-  #inicio > *, #resultado > *, #ranking > * { flex-shrink:0; }
+  #inicio > *, #resultado > *, #ranking > *, #duelo > *, #arena > * { flex-shrink:0; }
   #inicio { align-items:center; justify-content:safe center; gap:10px; text-align:center; overflow:auto; }
   #inicio h1 { color:var(--amarelo); font-size:46px; line-height:.95; margin:8px 0 0; text-shadow:0 4px 0 var(--brasa); }
   #inicio h1 small { display:block; font-size:24px; color:#FFE3A8; text-shadow:none; font-weight:600; }
@@ -154,6 +154,26 @@
   .podio:empty { display:none; }
   .modal input { font-size:22px; padding:10px 14px; border-radius:14px; border:3px solid var(--tinta); text-align:center; font-weight:800; color:var(--tinta); }
   h3.secao { color:var(--amarelo); margin:18px 0 6px; font-size:20px; }
+  .duelBtn { width:100%; max-width:380px; display:flex; align-items:center; gap:10px; padding:8px 14px; font-size:22px; line-height:1.1;
+    background:linear-gradient(90deg,#FF8A1F,#F2542D 48%,#4AA8E0 52%,#7FD1F5); color:#fff; box-shadow:0 5px 0 #123A5A; border-radius:20px; text-align:left; }
+  .duelBtn small { display:block; font-size:14px; opacity:.9; } .duelBtn .mini { display:flex; } .duelBtn svg { width:34px; height:auto; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; } .chip { font-size:16px; min-height:40px; }
+  .chip[aria-pressed="false"] { background:#3A1E10; color:#FFE3A8; box-shadow:none; }
+  .painel { background:#3A1E10; border-radius:18px; padding:14px; color:#FFE3A8; display:flex; flex-direction:column; gap:10px; }
+  #arenaPlacar { display:flex; align-items:center; justify-content:center; gap:6px; }
+  #arenaPlacar .lado { flex:1; display:flex; flex-direction:column; align-items:center; border-radius:16px; padding:4px 6px; color:#fff; font-weight:800; min-width:0; }
+  #arenaPlacar .lado span { font-size:15px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #arenaPlacar .lado b { font-size:26px; line-height:1; } #arenaPlacar .fogo { background:#5A2A10; } #arenaPlacar .gelo { background:#16405F; }
+  #arenaPlacar .vs { color:var(--amarelo); font-weight:800; font-size:22px; }
+  #arenaCard { background:var(--papel); border-radius:24px; padding:14px; box-shadow:0 6px 0 var(--brasa); display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+  #arenaPergunta { font-size:23px; font-weight:800; text-align:center; line-height:1.2; min-height:84px; display:flex; align-items:center; justify-content:center; }
+  #arenaOps { display:flex; flex-direction:column; gap:10px; } #arenaOps .opc { font-size:21px; padding:10px 8px; }
+  #arenaOps .opc:disabled { cursor:default; }
+  .conta { font-size:72px; color:var(--brasa); animation:pop .4s; }
+  .exp { color:#FFE3A8; font-size:17px; text-align:center; margin-top:10px; min-height:48px; }
+  .exp.aprende { background:#FFE9B8; color:var(--tinta); border-radius:16px; padding:10px 12px; text-align:left; }
+  .exp.aprende b { display:block; color:var(--brasa); font-size:14px; letter-spacing:1px; }
+  #fimArena { position:fixed; inset:0; background:rgba(43,20,8,.92); display:none; align-items:center; justify-content:center; z-index:6; padding:20px; }
   .areaBtn { display:flex; align-items:center; gap:12px; font-size:24px; padding:12px 18px; width:100%; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
   @media (max-height:700px) { #pergunta { font-size:21px; min-height:52px; } #fala { min-height:70px; } }
@@ -169,6 +189,7 @@
   <p style="font-size:16px">Descubra seu QI e dispute com todo o Brasil</p>
   <button class="btn grande" id="testeQI">🧠 TESTE DE QI<small>20 perguntas · uns 7 minutos</small></button>
   <button class="teaser" id="teaser"></button>
+  <button class="btn duelBtn" id="abrirDuelo"><span class="mini" id="duelMini"></span><span>⚔️ DUELO AO VIVO<small>Chaminha × Gelinho · chame um amigo</small></span></button>
   <div class="menu">
     <button class="btn tile" id="testeLogica"><i>🧩</i>Lógica<small>teste de 20</small></button>
     <button class="btn tile" id="abrirTreino"><i>🏋️</i>Treino<small>5 áreas do cérebro</small></button>
@@ -190,6 +211,52 @@
   <p style="color:#FFE3A8;margin:10px 0">Escolha o que treinar. As perguntas se ajustam ao seu nível ⭐.</p>
   <div id="listaAreas" style="display:flex;flex-direction:column;gap:12px"></div>
 </section>
+
+<section class="tela" id="duelo" style="overflow:auto;gap:12px">
+  <header style="display:flex;align-items:center;gap:10px;color:var(--amarelo)">
+    <button class="btn" id="voltarDuelo" aria-label="Voltar para o início">◀</button>
+    <h2 style="margin:0;font-size:26px">Duelo e quiz</h2>
+  </header>
+  <div id="dueloMenu" style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;justify-content:center;align-items:flex-end;gap:8px" id="dueloHeroi"></div>
+    <div class="painel"><b>1. Escolha o assunto</b><div class="chips" id="catLista"></div></div>
+    <button class="btn grande" id="criarDueloBtn" style="font-size:24px">⚔️ Desafiar amigo ao vivo<small>vocês respondem as mesmas 10 perguntas, ao mesmo tempo</small></button>
+    <button class="btn" id="soloBtn" style="font-size:20px">📚 Jogar sozinho e aprender</button>
+    <div id="dueloRecorde" style="color:#FFE3A8;text-align:center;font-weight:700"></div>
+  </div>
+  <div id="dueloEspera" class="painel" style="display:none;text-align:center">
+    <div style="font-size:20px;font-weight:800" id="dueloStatus"></div>
+    <div id="dueloConvite" style="display:none;flex-direction:column;gap:10px">
+      <div>Código da sala</div><div id="dueloCodigo" style="font-size:42px;font-weight:800;letter-spacing:6px;color:var(--amarelo)"></div>
+      <button class="btn grande" id="reenviarConvite" style="font-size:22px">📲 Mandar convite</button>
+      <small>Deixe esta tela aberta. Quando o amigo abrir o link, o duelo começa sozinho.</small>
+    </div>
+    <button class="btn fantasma" id="cancelarDuelo">Cancelar</button>
+  </div>
+</section>
+
+<section class="tela" id="arena">
+  <header style="display:flex;align-items:center;gap:8px;color:var(--amarelo)">
+    <button class="btn" id="sairArena" aria-label="Sair do duelo">✖</button>
+    <div id="arenaNum" style="font-weight:800;font-size:17px;flex:1;text-align:center"></div>
+  </header>
+  <div id="arenaPlacar" style="margin-top:8px"></div>
+  <div class="barra"><b id="arenaBarra" style="width:100%"></b></div>
+  <div id="arenaCard"><div id="arenaPergunta"></div><div id="arenaOps"></div></div>
+  <div class="exp" id="arenaExp" aria-live="polite"></div>
+</section>
+
+<div id="fimArena" role="dialog" aria-modal="true" aria-labelledby="fimArenaTitulo">
+  <div class="caixa" style="background:var(--papel);border-radius:28px;padding:20px;max-width:400px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:0 8px 0 var(--brasa)">
+    <div id="fimArenaMascote" class="flutua"></div>
+    <h2 id="fimArenaTitulo" style="margin:0;font-size:32px;color:var(--brasa)"></h2>
+    <div id="fimArenaPlacar" style="font-size:20px"></div>
+    <div id="fimArenaXP" style="font-size:16px;color:#8A5A3A"></div>
+    <button class="btn grande" id="fimRevanche" style="font-size:24px"></button>
+    <button class="btn" id="fimArenaZap">📲 Contar para os amigos</button>
+    <button class="btn fantasma" id="fimSair" style="color:var(--tinta);border-color:var(--tinta)">Sair</button>
+  </div>
+</div>
 
 <section class="tela" id="ranking" style="overflow:auto">
   <header style="display:flex;align-items:center;gap:10px;color:var(--amarelo)">
@@ -1220,6 +1287,12 @@ try {
   }
 } catch {}
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+<script src="perguntas.js"></script>
+<script src="arena.js"></script>
+<script>
+$('duelMini').innerHTML = chaminha(34) + gelinho(34);
+$('dueloHeroi').innerHTML = chaminha(80) + '<span style="font-size:34px;font-weight:800;color:var(--amarelo)">VS</span>' + gelinho(80);
 </script>
 </body>
 </html>
