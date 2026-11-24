@@ -1,6 +1,6 @@
 {
-  "name": "Pegadinha da Chaminha",
-  "short_name": "Pegadinha",
+  "name": "QI da Chaminha",
+  "short_name": "QI da Chaminha",
   "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",

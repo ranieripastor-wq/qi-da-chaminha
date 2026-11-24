@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#2B1408">
-<title>Pegadinha da Chaminha</title>
+<title>QI da Chaminha</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -129,7 +129,7 @@
 
 <section class="tela ativa" id="inicio">
   <div class="flutua" id="logoChama"></div>
-  <h1>Pegadinha<small>da Chaminha</small></h1>
+  <h1 style="font-size:72px">QI<small>da Chaminha</small></h1>
   <p>Teste de QI e treino do cérebro 🧠<br>Nenhuma partida é igual!</p>
   <button class="btn grande" id="testeQI">🧠 TESTE DE QI</button>
   <button class="btn" id="abrirTreino" style="font-size:22px;padding:10px 24px">🏋️ Treino do cérebro</button>
@@ -728,7 +728,7 @@ function ganhar(el) {
     $('porque').innerHTML = `<b>POR QUÊ?</b>${textoFase(fase.porque)}`;
     $('placar').textContent = marco ? historico.join('') : '';
     $('compartilhar').style.display = marco ? '' : 'none';
-    $('compartilhar').onclick = () => compartilhar(`🔥 Cheguei no nível ${nivel - 1} da Pegadinha da Chaminha! ⭐ ${estrelasTotal}\n${historico.join('')}\nCada partida tem perguntas diferentes. Duvido você chegar mais longe:`);
+    $('compartilhar').onclick = () => compartilhar(`🔥 Cheguei no nível ${nivel - 1} das pegadinhas do QI da Chaminha! ⭐ ${estrelasTotal}\n${historico.join('')}\nCada partida tem perguntas diferentes. Duvido você chegar mais longe:`);
     $('proxima').textContent = 'Próxima ➜';
     $('vitoria').style.display = 'flex'; $('proxima').focus();
   }, 650);
@@ -968,7 +968,7 @@ $('dica').onclick = () => { clique(); usouDica = true; fala('💡 ' + textoFase(
 $('desafio').onclick = () => {
   clique();
   const q = btoa(JSON.stringify({ ...specAtual, n: nivel }));
-  compartilhar(`🔥 Travei no nível ${nivel} da Pegadinha da Chaminha: "${$('pergunta').textContent}"\nDuvido você passar!`,
+  compartilhar(`🔥 Travei no nível ${nivel} das pegadinhas do QI da Chaminha: "${$('pergunta').textContent}"\nDuvido você passar!`,
     location.origin + location.pathname + '?q=' + encodeURIComponent(q));
 };
 $('proxima').onclick = () => { clique(); $('vitoria').style.display = 'none'; carregar(proximaFase()); };
