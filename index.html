@@ -173,6 +173,11 @@
   .exp { color:#FFE3A8; font-size:17px; text-align:center; margin-top:10px; min-height:48px; }
   .exp.aprende { background:#FFE9B8; color:var(--tinta); border-radius:16px; padding:10px 12px; text-align:left; }
   .exp.aprende b { display:block; color:var(--brasa); font-size:14px; letter-spacing:1px; }
+  .timeSala { border-radius:14px; padding:8px 10px; display:flex; flex-wrap:wrap; align-items:center; gap:6px; color:#fff; }
+  .timeSala.fogo { background:#5A2A10; } .timeSala.gelo { background:#16405F; } .timeSala svg { width:26px; height:auto; }
+  .timeSala span { background:rgba(255,255,255,.15); border-radius:10px; padding:2px 8px; font-weight:700; font-size:15px; }
+  .timeSala b { margin-right:4px; }
+  #fimArena .caixa { max-height:92vh; overflow:auto; }
   #fimArena { position:fixed; inset:0; background:rgba(43,20,8,.92); display:none; align-items:center; justify-content:center; z-index:6; padding:20px; }
   .areaBtn { display:flex; align-items:center; gap:12px; font-size:24px; padding:12px 18px; width:100%; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
@@ -189,7 +194,7 @@
   <p style="font-size:16px">Descubra seu QI e dispute com todo o Brasil</p>
   <button class="btn grande" id="testeQI">🧠 TESTE DE QI<small>20 perguntas · uns 7 minutos</small></button>
   <button class="teaser" id="teaser"></button>
-  <button class="btn duelBtn" id="abrirDuelo"><span class="mini" id="duelMini"></span><span>⚔️ DUELO AO VIVO<small>Chaminha × Gelinho · chame um amigo</small></span></button>
+  <button class="btn duelBtn" id="abrirDuelo"><span class="mini" id="duelMini"></span><span>⚔️ DUELO AO VIVO<small>Chaminha × Gelinho</small></span></button>
   <div class="menu">
     <button class="btn tile" id="testeLogica"><i>🧩</i>Lógica<small>teste de 20</small></button>
     <button class="btn tile" id="abrirTreino"><i>🏋️</i>Treino<small>5 áreas do cérebro</small></button>
@@ -220,7 +225,7 @@
   <div id="dueloMenu" style="display:flex;flex-direction:column;gap:12px">
     <div style="display:flex;justify-content:center;align-items:flex-end;gap:8px" id="dueloHeroi"></div>
     <div class="painel"><b>1. Escolha o assunto</b><div class="chips" id="catLista"></div></div>
-    <button class="btn grande" id="criarDueloBtn" style="font-size:24px">⚔️ Desafiar amigo ao vivo<small>vocês respondem as mesmas 10 perguntas, ao mesmo tempo</small></button>
+    <button class="btn grande" id="criarDueloBtn" style="font-size:24px">⚔️ Criar duelo ao vivo<small>de 2 a 20 pessoas · Time Chaminha × Time Gelinho</small></button>
     <button class="btn" id="soloBtn" style="font-size:20px">📚 Jogar sozinho e aprender</button>
     <div id="dueloRecorde" style="color:#FFE3A8;text-align:center;font-weight:700"></div>
   </div>
@@ -229,8 +234,10 @@
     <div id="dueloConvite" style="display:none;flex-direction:column;gap:10px">
       <div>Código da sala</div><div id="dueloCodigo" style="font-size:42px;font-weight:800;letter-spacing:6px;color:var(--amarelo)"></div>
       <button class="btn grande" id="reenviarConvite" style="font-size:22px">📲 Mandar convite</button>
-      <small>Deixe esta tela aberta. Quando o amigo abrir o link, o duelo começa sozinho.</small>
+      <small>Mande para quantos quiser, até 20 pessoas. Deixe esta tela aberta.</small>
     </div>
+    <div id="dueloJogadores" style="display:flex;flex-direction:column;gap:8px;text-align:left"></div>
+    <button class="btn grande" id="comecarDuelo" style="display:none;font-size:24px"></button>
     <button class="btn fantasma" id="cancelarDuelo">Cancelar</button>
   </div>
 </section>
@@ -241,6 +248,7 @@
     <div id="arenaNum" style="font-weight:800;font-size:17px;flex:1;text-align:center"></div>
   </header>
   <div id="arenaPlacar" style="margin-top:8px"></div>
+  <div id="arenaPos" style="color:#FFE3A8;font-weight:800;text-align:center;font-size:15px;min-height:4px"></div>
   <div class="barra"><b id="arenaBarra" style="width:100%"></b></div>
   <div id="arenaCard"><div id="arenaPergunta"></div><div id="arenaOps"></div></div>
   <div class="exp" id="arenaExp" aria-live="polite"></div>
