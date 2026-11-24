@@ -1228,29 +1228,30 @@ const QI = {
 let sessao = null;
 function iniciarSessao(modo, area) {
   clique();
-  const ordem = Object.keys(AREAS);
-  sessao = { modo, area, i: 0, total: modo === 'qi' ? 20 : 10, d: modo === 'qi' ? 1 : ler('nivelArea', {})[area] || 1, respostas: [],
-    // teste: 4 por área, misturadas; a dificuldade sobe de 1 a 5 ao longo do teste
-    fila: modo !== 'qi' ? [] : area ? Array(20).fill(area) : [0, 1, 2, 3].flatMap(() => embaralha(ordem)) };
+  // teste: itens no formato dos testes reais (testeqi.js), do mais fácil ao mais difícil
+  const fila = modo === 'qi' ? filaTeste(area) : [];
+  sessao = { modo, area, i: 0, total: modo === 'qi' ? fila.length : 10, d: modo === 'qi' ? 1 : ler('nivelArea', {})[area] || 1, respostas: [], fila };
   $('dica').style.visibility = modo === 'qi' ? 'hidden' : ''; $('desafio').style.visibility = 'hidden'; $('combo').style.display = 'none';
   mostrar('jogo'); carregarQuestao();
 }
 function carregarQuestao() {
   limpezas.forEach(f => f()); limpezas = [];
   terminou = false; errosNaFase = 0; usouDica = false;
-  const s = sessao, area = s.modo === 'qi' ? s.fila[s.i] : s.area, d = s.modo === 'qi' ? 1 + Math.floor(s.i / 4) : s.d;
+  const s = sessao, teste = s.modo === 'qi', [area, d] = teste ? s.fila[s.i] : [s.area, s.d], NOMES = teste ? AREAS_T : AREAS;
   R = Math.random;
   // tenta não repetir pergunta já vista
-  for (let t = 0; t < 15; t++) { fase = QI[area](d); const sig = fase.id || fase.p; if (!vistas.includes(sig) || t === 14) { vistas.push(sig); break; } }
+  for (let t = 0; t < 15; t++) { fase = (teste ? QIT : QI)[area](d); const sig = fase.id || fase.p; if (!vistas.includes(sig) || t === 14) { vistas.push(sig); break; } }
   vistas = vistas.slice(-400); guardar('vistas', vistas);
   s.areaAtual = area; s.dAtual = d;
   const palco = $('palco'); palco.innerHTML = ''; palco.style.background = ''; palco.onclick = null;
   $('card').classList.remove('certo');
   $('pergunta').onclick = null; $('nivel').onclick = null; $('pergunta').textContent = fase.p;
-  $('nivel').textContent = `${AREAS[area][0]} ${s.i + 1}/${s.total}`;
-  fala(s.i === 0 ? (s.modo === 'qi' ? 'Vamos medir esse cérebro! Responda rápido, sem medo. 🧠' : `Treino de ${AREAS[area][1]}! Bora!`) : um(['Próxima!', 'Foco! 👀', 'Essa é boa!', 'Pensa rápido!', 'Vai que dá!']));
+  $('nivel').textContent = `${NOMES[area][0]} ${s.i + 1}/${s.total}`;
+  fala(s.i === 0 ? (teste ? 'Vamos medir esse cérebro! Sem pressa: pense com calma. 🧠' : `Treino de ${AREAS[area][1]}! Bora!`) : um(teste ? ['Próxima!', 'Com calma! 👀', 'Essa é boa!', 'Olhe os detalhes.', 'Vai que dá!'] : ['Próxima!', 'Foco! 👀', 'Essa é boa!', 'Pensa rápido!', 'Vai que dá!']));
   fase.monta(palco);
-  // cronômetro: a barra esvazia; acabou o tempo, conta como erro
+  // teste de QI não tem tempo (como os testes reais); a barra mostra o progresso
+  if (teste) { $('barraJogo').style.width = (s.i / s.total * 100) + '%'; $('barraJogo').style.background = ''; return; }
+  // treino: cronômetro, a barra esvazia; acabou o tempo, conta como erro
   const limite = (fase.tempo || 25) * 1000, inicio = performance.now(); s.inicio = inicio; s.limite = limite;
   const barra = $('barraJogo');
   cronometro(setInterval(() => {
@@ -1262,8 +1263,8 @@ function carregarQuestao() {
 function responder(certo, el) {
   if (terminou) return; terminou = true;
   limpezas.forEach(f => f()); limpezas = [];
-  const s = sessao, tempo = (performance.now() - s.inicio) / 1000;
-  s.respostas.push({ area: s.areaAtual, d: s.dAtual, certo, rapido: tempo * 1000 < s.limite / 2 });
+  const s = sessao;
+  s.respostas.push({ area: s.areaAtual, d: s.dAtual, certo });
   if (certo) { som([[660, 0, .1], [880, .08, .18]]); vibrar(30); el?.classList?.add('certo'); fala(um(['Certo! ✅', 'Isso! 🔥', 'Mandou bem!', 'Boa!'])); }
   else {
     somErro(); vibrar(120);
@@ -1278,12 +1279,6 @@ function responder(certo, el) {
     if (s.i < s.total) carregarQuestao(); else fimSessao();
   }, certo ? 900 : s.modo === 'treino' ? 3200 : 1800);
 }
-function calcularQI(respostas) {
-  let pontos = 0, max = 0;
-  respostas.forEach(r => { max += r.d * 1.15; if (r.certo) pontos += r.d * (r.rapido ? 1.15 : 1); });
-  const qi = Math.round(70 + (pontos / max) * 78);
-  return Math.max(70, Math.min(148, qi));
-}
 function rotuloQI(qi) {
   return qi >= 130 ? 'Genial! 🔥🔥🔥' : qi >= 115 ? 'Muito acima da média! 🔥' : qi >= 100 ? 'Acima da média! 💪' : qi >= 85 ? 'Na média. Dá pra subir! 🙂' : 'Treina comigo que melhora! 💛';
 }
@@ -1292,7 +1287,8 @@ function fimSessao() {
   $('dica').style.visibility = ''; $('desafio').style.visibility = '';
   const porArea = {};
   s.respostas.forEach(r => { const a = porArea[r.area] ||= { c: 0, t: 0 }; a.t++; if (r.certo) a.c++; });
-  const barras = Object.entries(porArea).map(([a, v]) => `<div class="area"><span>${AREAS[a][0]} ${AREAS[a][1]}</span><div class="barra"><b style="width:${v.c / v.t * 100}%"></b></div><span>${v.c}/${v.t}</span></div>`).join('');
+  const NOMES = s.modo === 'qi' ? AREAS_T : AREAS;
+  const barras = Object.entries(porArea).map(([a, v]) => `<div class="area"><span>${NOMES[a][0]} ${NOMES[a][1]}</span><div class="barra"><b style="width:${v.c / v.t * 100}%"></b></div><span>${v.c}/${v.t}</span></div>`).join('');
   const acertos = s.respostas.filter(r => r.certo).length;
   somAcerto(); faiscas(innerWidth / 2, innerHeight / 3);
   // XP: 10 por ponto de dificuldade de cada acerto; avisa quando sobe de nível
@@ -1302,7 +1298,7 @@ function fimSessao() {
   const nA = nivelDe(xpAntes), nD = nivelDe(xpAntes + ganho);
   const xpTexto = `<br>+${ganho} XP · ${nD.ic} Nível ${nD.n} ${nD.nome}` + (nD.n > nA.n ? ' <b>SUBIU DE NÍVEL! 🎉</b>' : '');
   if (s.modo === 'qi') {
-    const qi = calcularQI(s.respostas), ordenadas = Object.entries(porArea).sort((a, b) => b[1].c / b[1].t - a[1].c / a[1].t);
+    const qi = qiDoTeste(s.respostas), ordenadas = Object.entries(porArea).sort((a, b) => b[1].c / b[1].t - a[1].c / a[1].t);
     const forte = ordenadas[0][0], fraca = ordenadas.at(-1)[0];
     const antes = ler('melhorQI', 0), melhor = Math.max(qi, antes); guardar('melhorQI', melhor);
     const tipo = s.area ? 'Lógica' : 'QI completo';
@@ -1313,11 +1309,12 @@ function fimSessao() {
     $('resTitulo').textContent = s.area ? 'Seu QI de lógica' : 'Seu QI estimado';
     $('resNumero').textContent = qi; $('resRotulo').textContent = rotuloQI(qi);
     $('resDetalhe').innerHTML = `${acertos} de ${s.total} certas · recorde: ${melhor}<br>Melhor que <b>${percentil(qi)}%</b> das pessoas`
-      + (s.area ? '' : `<br>Ponto forte: <b>${AREAS[forte][1]}</b> · Treine: <b>${AREAS[fraca][1]}</b>`)
+      + (s.area ? '' : `<br>Ponto forte: <b>${AREAS_T[forte][1]}</b> · Treine: <b>${AREAS_T[fraca][1]}</b>`)
       + (novaMeta ? `<br>🏅 <b>Medalha nova: QI ${novaMeta}!</b>` : '')
       + (acima ? `<br>Próximo famoso: ${acima[0]} (${acima[1]})` : '') + xpTexto;
     $('resNovo').onclick = () => iniciarSessao('qi', s.area);
-    $('resTreinar').textContent = `🏋️ Treinar ${AREAS[fraca][1]}`; $('resTreinar').onclick = () => iniciarSessao('treino', fraca);
+    const treinar = AREAS_T[fraca][2];
+    $('resTreinar').textContent = `🏋️ Treinar ${AREAS[treinar][1]}`; $('resTreinar').onclick = () => iniciarSessao('treino', treinar);
     $('resCompartilhar').onclick = () => compartilhar(`🧠 Meu QI na Chaminha deu ${qi}! ${rotuloQI(qi)}` + (ultimaPos ? `\n🏆 Estou em ${ultimaPos}º no ranking da semana.` : '')
       + `\nCada teste tem perguntas diferentes. Duvido você passar de ${qi}:`);
     fala(`Seu QI estimado deu ${qi}! ${rotuloQI(qi)}`);
@@ -1404,6 +1401,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 <script src="perguntas.js"></script>
 <script src="perguntas2.js"></script>
 <script src="perguntas3.js"></script>
+<script src="testeqi.js"></script>
 <script src="arena.js"></script>
 <script src="adedonha.js"></script>
 <script src="diario.js"></script>
