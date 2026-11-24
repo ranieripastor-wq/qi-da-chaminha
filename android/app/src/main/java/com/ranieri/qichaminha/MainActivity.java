@@ -18,6 +18,7 @@ import java.util.List;
 
 /** Casca do QI da Chaminha: o mesmo jogo do site, empacotado em assets/app, com anúncios do AdMob. */
 public final class MainActivity extends Activity {
+    private static long ultimaQueda; // static: o recreate() cria outra Activity
     private static final String ORIGIN = "appassets.androidplatform.net";
     // Únicos endereços de fora que o jogo usa: ranking (Vercel) e o PeerJS do duelo ao vivo.
     private static final List<String> REDE = Arrays.asList("qi-chaminha-ranking.vercel.app", "unpkg.com", "0.peerjs.com", "fonts.googleapis.com", "fonts.gstatic.com");
@@ -68,7 +69,12 @@ public final class MainActivity extends Activity {
                 if ("https".equals(u.getScheme())) try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) {}
                 return true;
             }
-            @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail d) { recreate(); return true; }
+            // a tela do jogo caiu: recria uma vez; caiu de novo em seguida, fecha (evita ficar num ciclo)
+            @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail d) {
+                long agora = android.os.SystemClock.elapsedRealtime();
+                if (agora - ultimaQueda < 60_000) finish(); else recreate();
+                ultimaQueda = agora; return true;
+            }
         });
         web.setWebChromeClient(new WebChromeClient() {
             @Override public boolean onConsoleMessage(ConsoleMessage msg) {

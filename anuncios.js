@@ -46,13 +46,14 @@ if (NATIVO) {
   // botão voltar do Android: volta ao início; no início, o app pergunta se quer sair
   window.voltarApp = () => {
     if (document.querySelector('.tela.ativa')?.id === 'inicio') return false;
-    $('fimArena').style.display = 'none'; $('nomeModal').style.display = 'none';
+    $('fimArena').style.display = 'none'; $('nomeModal').style.display = 'none'; $('vitoria').style.display = 'none'; fimEhDiario = false;
+    limpezas.forEach(f => f()); limpezas = []; if (sessao) { sessao = null; $('dica').style.visibility = ''; $('desafio').style.visibility = ''; }
     pararArena(); mostrar('inicio'); return true;
   };
 
   if (NATIVO.pedePrivacidade()) {
     const b = document.createElement('button'); b.className = 'btn fantasma'; b.textContent = 'Privacidade dos anúncios';
-    b.style.cssText = 'font-size:13px;min-height:36px;border-width:2px';
+    b.style.cssText = 'font-size:13px;min-height:48px;border-width:2px';
     b.onclick = () => NATIVO.privacidadeAnuncios();
     $('rodape').appendChild(b);
   }

@@ -54,7 +54,8 @@ function adMostrarRodada(letra, rodada) {
   });
   $('adStop').disabled = true;
   // sorteio da letra girando
-  let giros = 0; const roleta = setInterval(() => {
+  let giros = 0; const roleta = a.adRoleta = setInterval(() => {
+    if (!arena) return clearInterval(roleta);
     $('adLetra').textContent = giros++ < 12 ? AD_LETRAS[Math.floor(Math.random() * AD_LETRAS.length)] : letra;
     clique();
     if (giros > 12) { clearInterval(roleta); vibrar(60); adRelogio(AD_TEMPO, () => { if (a.host) adParar(null); }); }
@@ -122,7 +123,7 @@ function adParar(quemPid) {
 }
 function adReceberResp(pid, resps) {
   const a = arena; if (!a.jog[pid] || a.adFase === 'votar' || a.adFase === 'fim') return;
-  a.adTabela[pid] = AD_CATS.map((_, i) => String(resps?.[i] || '').replace(/[<>]/g, '').slice(0, 24));
+  a.adTabela[pid] = AD_CATS.map((_, i) => { const r = String(resps?.[i] || '').replace(/[<>]/g, '').slice(0, 24); return feio(r) ? '' : r; });
   if (Object.keys(a.jog).filter(p => !a.jog[p].fora).every(p => a.adTabela[p])) { clearTimeout(a.espera); adAbrirVotacao(); }
 }
 function adAbrirVotacao() {
@@ -143,7 +144,7 @@ function adHost(pid, m) {
   const a = arena;
   if (m.t === 'ad_stop' && a.adFase === 'escrever') adParar(pid);
   if (m.t === 'ad_resp') adReceberResp(pid, m.resps);
-  if (m.t === 'ad_voto' && a.adFase === 'votar') a.adVotosTodos[pid] = (m.votos || []).slice(0, 200);
+  if (m.t === 'ad_voto' && a.adFase === 'votar' && a.jog[pid]) a.adVotosTodos[pid] = [...new Set((Array.isArray(m.votos) ? m.votos : []).filter(k => typeof k === 'string'))].slice(0, 200);
 }
 function adEncerrar() {
   const a = arena; a.adRodando = false; a.rodando = false;

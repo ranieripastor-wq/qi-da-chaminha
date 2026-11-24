@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="description" content="Teste de QI grátis no formato dos testes reais, desafio do dia, duelo ao vivo e ranking com todo o Brasil. Com a Chaminha!">
 <meta name="theme-color" content="#2B1408">
 <title>QI da Chaminha</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -12,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
   :root { --amarelo:#FFC928; --laranja:#FF8A1F; --brasa:#F2542D; --tinta:#3A1A0A; --fundo:#2B1408; --papel:#FFF4DC;
-    --verde:#3BB54A; --vermelho:#E5383B; }
+    --verde:#2E9A3C; --vermelho:#D62828; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
   html,body { margin:0; height:100%; color:var(--tinta); overscroll-behavior:none; overflow:hidden;
     font-family:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
@@ -24,7 +25,7 @@
   @keyframes entra { from { opacity:0; transform:translateY(12px); } }
 
   .btn { border:0; border-radius:16px; font-weight:800; cursor:pointer; background:var(--amarelo); color:var(--tinta);
-    padding:8px 14px; font-size:18px; box-shadow:0 4px 0 var(--laranja); min-height:44px; min-width:44px; }
+    padding:8px 14px; font-size:18px; box-shadow:0 4px 0 var(--laranja); min-height:48px; min-width:48px; }
   .btn:active { transform:translateY(3px); box-shadow:0 1px 0 var(--laranja); }
   .btn.grande { font-size:30px; line-height:1.25; padding:14px 40px; border-radius:24px; box-shadow:0 7px 0 var(--brasa); }
   .btn.grande:active { box-shadow:0 2px 0 var(--brasa); transform:translateY(5px); }
@@ -75,6 +76,8 @@
     color:var(--vermelho); font-size:64px; font-weight:800; text-shadow:0 0 6px #fff; pointer-events:none; animation:some .8s forwards; }
   @keyframes some { 0% { transform:scale(.3); } 25% { transform:scale(1.1); } 70% { opacity:1; } 100% { opacity:0; } }
   .certo { outline:5px solid var(--verde); outline-offset:3px; border-radius:18px; }
+  .grade .opc.certo, #arenaOps .opc.certo { position:relative; }
+  .grade .opc.certo::before, #arenaOps .opc.certo::before { content:"✔"; position:absolute; top:-10px; right:-10px; width:28px; height:28px; border-radius:50%; background:var(--verde); color:#fff; font-size:17px; line-height:28px; text-align:center; z-index:1; }
   @keyframes treme { 20%{transform:translateX(-9px)} 40%{transform:translateX(9px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(4px)} }
   #fala { display:flex; align-items:flex-end; gap:8px; margin-top:10px; min-height:84px; }
   #mascote { animation:flutua 2.4s ease-in-out infinite; }
@@ -183,7 +186,7 @@
   .diaBtn small { display:block; font-size:14px; font-weight:700; opacity:.85; } .diaBtn .calend { font-size:32px; }
   .diaBtn.feito { background:#3A1E10; color:#FFE3A8; box-shadow:0 5px 0 #20100A; }
   .quadrinhos { font-size:21px; letter-spacing:-1px; line-height:1.3; white-space:nowrap; }
-  .chips { display:flex; flex-wrap:wrap; gap:8px; } .chip { font-size:16px; min-height:40px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; } .chip { font-size:16px; min-height:48px; }
   .chip[aria-pressed="false"] { background:#3A1E10; color:#FFE3A8; box-shadow:none; }
   .painel { background:#3A1E10; border-radius:18px; padding:14px; color:#FFE3A8; display:flex; flex-direction:column; gap:10px; }
   #arenaPlacar { display:flex; align-items:center; justify-content:center; gap:6px; }
@@ -212,7 +215,7 @@
   #adStop { position:sticky; bottom:8px; z-index:2; width:100%; } #adStop:disabled { background:#6A4A30; color:#FFE3A8; box-shadow:0 7px 0 #20100A; }
   #adCampos { padding-bottom:8px; }
   .adCat { background:#3A1E10; border-radius:14px; padding:8px 10px; display:flex; flex-direction:column; gap:6px; color:var(--amarelo); }
-  .adResp { text-align:left; border:2px solid transparent; border-radius:10px; background:var(--papel); color:var(--tinta); font-family:inherit; font-size:16px; padding:6px 10px; font-weight:700; cursor:pointer; min-height:40px; }
+  .adResp { text-align:left; border:2px solid transparent; border-radius:10px; background:var(--papel); color:var(--tinta); font-family:inherit; font-size:16px; padding:6px 10px; font-weight:700; cursor:pointer; min-height:48px; }
   .adResp i { font-style:normal; font-weight:800; } .adResp.minha { background:#FFE9B8; }
   .adResp.vazio { background:#4A2A18; color:#B89878; text-decoration:line-through; }
   .adResp.negada { background:#F8C9C9; border-color:var(--vermelho); text-decoration:line-through; }
@@ -230,10 +233,10 @@
 <div class="brasas" id="brasas" aria-hidden="true"></div>
 
 <section class="tela ativa" id="inicio">
-  <div class="topo"><span class="pilula" id="sequencia"></span><button class="btn fantasma" id="somInicio" aria-label="Ligar ou desligar o som">🔊</button></div>
+  <div class="topo"><span class="pilula" id="sequencia"></span><span style="display:flex;gap:8px"><button class="btn fantasma" id="musicaInicio" aria-label="Ligar ou desligar a música" onclick="Musica.alternar()">🎵</button><button class="btn fantasma" id="somInicio" aria-label="Ligar ou desligar os efeitos e a voz">🔊</button></span></div>
   <h1 class="logo" id="logo" aria-label="QI da Chaminha"></h1>
   <p style="font-size:16px">Descubra seu QI e dispute com todo o Brasil</p>
-  <button class="btn grande" id="testeQI">🧠 TESTE DE QI<small>20 perguntas · uns 7 minutos</small></button>
+  <button class="btn grande" id="testeQI">🧠 TESTE DE QI<small>30 perguntas · sem tempo</small></button>
   <button class="btn diaBtn" id="abrirDiario"></button>
   <button class="teaser" id="teaser"></button>
   <button class="btn duelBtn" id="abrirDuelo"><span class="mini" id="duelMini"></span><span>⚔️ DUELO AO VIVO<small>Chaminha × Gelinho</small></span></button>
@@ -245,7 +248,7 @@
   </div>
   <div class="cartaoNivel" id="cartaoNivel"></div>
   <div id="recordeInicio" style="color:#FFE3A8;font-size:15px;font-weight:700"></div>
-  <button class="btn fantasma" id="recomecar" style="font-size:13px;min-height:36px;border-width:2px">Recomeçar pegadinhas do nível 1</button>
+  <button class="btn fantasma" id="recomecar" style="font-size:13px;min-height:48px;border-width:2px">Recomeçar pegadinhas do nível 1</button>
   <div id="rodape" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center"><a href="privacidade.html" style="color:#B89878;font-size:13px">Política de privacidade</a></div>
 </section>
 
@@ -339,7 +342,7 @@
   <header style="display:flex;align-items:center;gap:10px;color:var(--amarelo)">
     <button class="btn" id="voltarRanking" aria-label="Voltar para o início">◀</button>
     <h2 style="margin:0;font-size:26px;flex:1">Ranking</h2>
-    <button class="btn fantasma" id="trocarNome" style="font-size:14px;border-width:2px;min-height:36px">✏️ Apelido</button>
+    <button class="btn fantasma" id="trocarNome" style="font-size:14px;border-width:2px;min-height:48px">✏️ Apelido</button>
   </header>
   <div class="abas" role="tablist">
     <button class="btn" role="tab" data-aba="hoje" aria-selected="false">Hoje</button>
@@ -589,7 +592,7 @@ const FASES = [
       const c = obj(palco, chaminha(150, undefined, undefined, true, true), 25, 15, () => {
         toques++;
         c.classList.remove('errado'); void c.offsetWidth; c.style.animation = 'treme .4s'; setTimeout(() => c.style.animation = '', 400);
-        if (toques >= 5) { c.innerHTML = chaminha(150); ganhar(c); } else fala('Zzz' + '.'.repeat(toques) + ' 💤 (mais!)');
+        if (toques >= 5) { c.innerHTML = chaminha(150); ganhar(c); } else fala('Ronc' + ', ronc'.repeat(toques) + ' 💤 (mais!)');
       });
     } },
   { p: 'Quantos buracos tem uma camiseta?', dica: 'Por onde passam a cabeça, os braços e a barriga?',
@@ -886,6 +889,15 @@ async function enviarRanking(qi) {
     return r.ok ? await r.json() : { erro: (await r.json().catch(() => ({}))).erro || 'servidor' };
   } catch { return { erro: 'rede' }; }
 }
+// palavrão (o mesmo filtro do servidor do ranking, api/ranking.js): apelidos e respostas que os outros veem
+const FEIO_RAIZES = /(porra|caralh|buceta|arrombad|xoxota|piroca|viad|fdp|vsf|fuck|shit|bitch|cacete|desgracad|vagabund|putinh|putaria)/;
+const FEIO_PALAVRAS = new Set(['puta', 'puto', 'cu', 'pau', 'pinto', 'merda', 'bosta', 'corno', 'rola', 'pica', 'otario', 'idiota', 'burro']);
+function feio(n) {
+  const t = String(n).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[0134578@$]/g, c => ({ 0: 'o', 1: 'i', 3: 'e', 4: 'a', 5: 's', 7: 't', 8: 'b', '@': 'a', $: 's' })[c]);
+  const palavras = t.replace(/(^|[^a-z])((?:[a-z][^a-z]){2,}[a-z])(?![a-z])/g, (_, a, b) => a + b.replace(/[^a-z]/g, '')).split(/[^a-z]+/);
+  return FEIO_RAIZES.test(t.replace(/[^a-z]/g, '')) || palavras.some(w => FEIO_PALAVRAS.has(w));
+}
 // pergunta o apelido; resolve com o nome ou null se a pessoa pular
 function pedirApelido(texto) {
   return new Promise(ok => {
@@ -896,6 +908,7 @@ function pedirApelido(texto) {
     $('nomeOk').onclick = () => {
       const n = $('nomeInput').value.replace(/\s+/g, ' ').trim();
       if (n.length < 2) { $('nomeErro').textContent = 'Escreva pelo menos 2 letras.'; return; }
+      if (feio(n)) { $('nomeErro').textContent = 'Esse apelido não pode. Escolha outro.'; return; }
       clique(); guardar('apelido', n); fim(n);
     };
     $('nomeInput').onkeydown = e => { if (e.key === 'Enter') $('nomeOk').click(); };
@@ -974,7 +987,7 @@ function atualizaInicio() {
   $('cartaoNivel').innerHTML = htmlNivel();
   $('recordeInicio').textContent = recorde ? `🏆 Recorde: nível ${recorde}  ·  ⭐ ${estrelasTotal}` : '';
   $('subPegadinha').textContent = nivel > 1 ? `nível ${nivel}` : 'sem fim';
-  const q = ler('melhorQI', 0); $('testeQI').innerHTML = `🧠 TESTE DE QI<small>${q ? `seu recorde: ${q} · bata ele!` : '20 perguntas · uns 7 minutos'}</small>`;
+  const q = ler('melhorQI', 0); $('testeQI').innerHTML = `🧠 TESTE DE QI<small>${q ? `seu recorde: ${q} · bata ele!` : '30 perguntas · sem tempo'}</small>`;
 }
 
 // ---------- peças das fases ----------
@@ -1037,10 +1050,12 @@ function atualizaSom() { $('somInicio').textContent = somLigado ? '🔊' : '🔇
 function falarAlto(txt) {
   if (!somLigado || !('speechSynthesis' in window)) return;
   try {
-    const limpo = txt.replace(/\p{Extended_Pictographic}/gu, '').trim();
+    const NOMES_EMOJI = { '💡': 'dica', '📲': 'convite', '🍎': 'maçã', '🍌': 'banana', '🐶': 'cachorro', '🐱': 'gato', '✔': 'certo', '⏰': '' };
+    const limpo = txt.replace(/\p{Extended_Pictographic}/gu, e => NOMES_EMOJI[e] ?? '').replace(/ +([!?.,])/g, '$1').trim();
     if (!limpo) return;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(limpo); u.lang = 'pt-BR'; u.pitch = 1.6; u.rate = 1.08;
+    const u = new SpeechSynthesisUtterance(limpo); u.lang = 'pt-BR'; u.pitch = 1.4; u.rate = 1.08;
+    u.onstart = () => Musica.abaixar(true); u.onend = u.onerror = () => Musica.abaixar(false);
     const voz = speechSynthesis.getVoices().find(v => v.lang === 'pt-BR'); if (voz) u.voice = voz;
     speechSynthesis.speak(u);
   } catch {}
@@ -1052,7 +1067,7 @@ function fala(txt, feliz = true) {
   $('mascote').innerHTML = chaminha(64, undefined, undefined, feliz);
   falarAlto(txt);
 }
-const ERROS = ['Quase! Pensa diferente 😅', 'Hmm, não é isso...', 'Opa! Tenta de novo!', 'Esse não! Olha com calma.', 'Pegadinha! 😜', 'Caiu direitinho! 🤭'];
+const ERROS = ['Quase! Pensa diferente 😅', 'Hum, não é isso...', 'Opa! Tenta de novo!', 'Esse não! Olha com calma.', 'Pegadinha! 😜', 'Caiu direitinho! 🤭'];
 const BOAS_VINDAS = ['Lá vem pegadinha...', 'Essa é das boas!', 'Pensa fora da caixinha!', 'Duvido de primeira! 😏', 'Atenção aos detalhes...', 'Essa é nova, hein!', 'Cuidado com essa!'];
 
 function errar(el) {
@@ -1270,7 +1285,7 @@ function responder(certo, el) {
     somErro(); vibrar(120);
     if (el instanceof Element) { el.classList.add('errado'); }
     document.querySelectorAll('#palco .opc[data-certo]').forEach(b => b.classList.add('certo'));
-    fala(el ? (s.modo === 'treino' ? fase.porque : 'Não era essa... a certa está em verde.') : '⏰ Acabou o tempo!', false);
+    fala(el ? (s.modo === 'treino' ? fase.porque : 'Não era essa... a certa está marcada com ✔.') : '⏰ Acabou o tempo!', false);
   }
   if (s.modo === 'treino') s.d = Math.max(1, Math.min(5, s.d + (certo ? 1 : -1)));
   setTimeout(() => {
@@ -1280,7 +1295,7 @@ function responder(certo, el) {
   }, certo ? 900 : s.modo === 'treino' ? 3200 : 1800);
 }
 function rotuloQI(qi) {
-  return qi >= 130 ? 'Genial! 🔥🔥🔥' : qi >= 115 ? 'Muito acima da média! 🔥' : qi >= 100 ? 'Acima da média! 💪' : qi >= 85 ? 'Na média. Dá pra subir! 🙂' : 'Treina comigo que melhora! 💛';
+  return qi >= 130 ? 'Genial! 🔥🔥🔥' : qi >= 115 ? 'Muito acima da média! 🔥' : qi >= 105 ? 'Acima da média! 💪' : qi >= 95 ? 'Na média! 🙂' : qi >= 85 ? 'Na média. Dá pra subir! 🙂' : 'Treina comigo que melhora! 💛';
 }
 function fimSessao() {
   const s = sessao; sessao = null;
@@ -1359,7 +1374,7 @@ $('abrirTreino').onclick = () => { clique(); abrirTreino(); };
 $('voltarTreino').onclick = () => { clique(); mostrar('inicio'); };
 $('resInicio').onclick = () => { clique(); mostrar('inicio'); };
 $('resNovo').onclick = () => iniciarSessao('qi');
-$('recomecar').onclick = () => { clique(); nivel = 1; historico = []; guardar('nivel', 1); guardar('hist', []); carregar(proximaFase()); mostrar('jogo'); };
+$('recomecar').onclick = () => { clique(); if (!confirm('Voltar as pegadinhas para o nível 1? Seu progresso nelas será apagado.')) return; nivel = 1; historico = []; guardar('nivel', 1); guardar('hist', []); carregar(proximaFase()); mostrar('jogo'); };
 $('abrirMapa').onclick = () => { clique(); limpezas.forEach(f => f()); limpezas = []; if (sessao) { sessao = null; $('dica').style.visibility = ''; $('desafio').style.visibility = ''; } mostrar('inicio'); };
 $('somInicio').onclick = () => { somLigado = !somLigado; guardar('som', somLigado); atualizaSom(); clique(); };
 $('dica').onclick = () => { clique(); usouDica = true; fala('💡 ' + textoFase(fase.dica)); };
@@ -1406,6 +1421,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 <script src="adedonha.js"></script>
 <script src="diario.js"></script>
 <script src="anuncios.js"></script>
+<script src="musica.js"></script>
 <script>
 $('duelMini').innerHTML = chaminha(34) + gelinho(34);
 $('dueloHeroi').innerHTML = chaminha(80) + '<span style="font-size:34px;font-weight:800;color:var(--amarelo)">VS</span>' + gelinho(80);

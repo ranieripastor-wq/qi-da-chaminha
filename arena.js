@@ -51,11 +51,11 @@ function abrirDuelo() {
   mostrar('duelo');
 }
 const catEscolhida = () => document.querySelector('#catLista .chip[aria-pressed="true"]')?.dataset.cat || 'mix';
-const nomeCat = c => c === 'mix' ? '🎲 Misturado' : `${TEMAS[c][0]} ${TEMAS[c][1]}`;
+const nomeCat = c => c === 'mix' || !TEMAS[c] ? '🎲 Misturado' : `${TEMAS[c][0]} ${TEMAS[c][1]}`;
 
 function pararArena() {
   if (!arena) return;
-  clearInterval(arena.relogio); clearTimeout(arena.espera);
+  clearInterval(arena.relogio); clearInterval(arena.adRel); clearInterval(arena.adRoleta); clearTimeout(arena.espera);
   try { arena.conn?.close(); } catch {} Object.values(arena.conns || {}).forEach(c => { try { c.close(); } catch {} });
   try { arena.peer?.destroy(); } catch {}
   arena = null;
@@ -197,7 +197,7 @@ function desenhaSala() {
     statusDuelo(js.length >= 2 ? 'Quando todos entrarem, toque em Começar.' : 'Esperando os amigos entrarem... ⏳');
   } else statusDuelo('Você entrou! Esperando o anfitrião começar... ⏳');
 }
-function novoJogador(nome, time) { return { nome: String(nome || 'Amigo').replace(/[<>]/g, '').slice(0, 16), time, pts: 0, acertos: 0, resp: -1, fora: false }; }
+function novoJogador(nome, time) { nome = String(nome || 'Amigo').replace(/[<>]/g, '').slice(0, 16); return { nome: feio(nome) ? 'Amigo' : nome, time, pts: 0, acertos: 0, resp: -1, fora: false }; }
 
 // ---------- anfitrião ----------
 async function criarDuelo(jogo = 'quiz') {
@@ -232,7 +232,7 @@ function enviarConvite() {
 }
 function doConvidado(pid, m) {
   const a = arena; if (!a || !m) return;
-  if (m.t === 'oi' && !a.jog[pid]) {
+  if (m.t === 'oi' && !a.jog[pid] && Object.keys(a.jog).length < MAX_JOG) {
     const n0 = Object.values(a.jog).filter(j => j.time === 0).length, n1 = Object.values(a.jog).length - n0;
     a.jog[pid] = novoJogador(m.nome, n0 <= n1 ? 0 : 1);
     a.jog[pid].fora = a.rodando; // quem chega no meio entra na próxima rodada
@@ -290,8 +290,28 @@ async function entrarDuelo(codigo) {
   });
   peer.on('error', e => statusDuelo(e.type === 'peer-unavailable' ? 'Essa sala não existe mais. Peça um link novo.' : 'Não deu para conectar. Confira a internet.'));
 }
+// o anfitrião é outro celular: tudo o que ele manda é conferido antes de ir para a tela
+const idOk = k => /^[\w-]{1,64}$/.test(k);
+const num = (v, max = 1e6) => Math.max(0, Math.min(max, Number(v) || 0));
+function limpaMsg(m) {
+  if (m.jog) m.jog = Object.fromEntries(Object.entries(m.jog || {}).filter(([k]) => idOk(k)).slice(0, MAX_JOG + 2).map(([k, j]) =>
+    [k, { ...novoJogador(j?.nome, j?.time === 1 ? 1 : 0), pts: num(j?.pts), acertos: num(j?.acertos, 999), resp: Number.isInteger(j?.resp) ? j.resp : -1, fora: !!j?.fora }]));
+  if (m.cat !== undefined && m.cat !== 'mix' && !TEMAS[m.cat]) m.cat = 'mix';
+  if (m.jogo !== undefined && m.jogo !== 'adedonha') m.jogo = 'duelo';
+  if (m.eu !== undefined) m.eu = idOk(String(m.eu)) ? String(m.eu) : '';
+  if (m.i !== undefined) m.i = Number.isInteger(m.i) ? m.i : -1;
+  if (m.perguntas) m.perguntas = (Array.isArray(m.perguntas) ? m.perguntas : []).filter(q => q && TEMAS[q.c] && Array.isArray(q.ops)).slice(0, 50);
+  if (m.letra !== undefined) m.letra = String(m.letra).toUpperCase().replace(/[^A-Z]/g, '').slice(0, 1) || 'A';
+  if (m.rodada !== undefined) m.rodada = typeof m.rodada === 'object' && m.rodada ? Object.fromEntries(Object.entries(m.rodada).filter(([k]) => idOk(k))
+    .map(([k, r]) => [k, { pts: num(r?.pts, 999), det: (Array.isArray(r?.det) ? r.det : []).slice(0, 10).map(v => num(v, 99)) }])) : num(m.rodada, 99);
+  if (m.tabela) m.tabela = Object.fromEntries(Object.entries(m.tabela || {}).filter(([k]) => idOk(k))
+    .map(([k, l]) => [k, (Array.isArray(l) ? l : []).slice(0, 10).map(r => String(r ?? '').slice(0, 24))]));
+  if (m.quem !== undefined) m.quem = idOk(String(m.quem)) ? String(m.quem) : null;
+  return m;
+}
 function doAnfitriao(m) {
-  const a = arena; if (!a || !m) return;
+  const a = arena; if (!a || !m || typeof m !== 'object') return;
+  limpaMsg(m);
   if (m.t === 'cheia') return statusDuelo(`Esse duelo já tem ${MAX_JOG} jogadores.`);
   if (m.t === 'bemvindo') { a.eu = m.eu; if (m.rodando) statusDuelo('O duelo já começou. Você entra na próxima rodada! ⏳'); }
   if (m.jog) { a.jog = m.jog; }
@@ -300,7 +320,7 @@ function doAnfitriao(m) {
   if (m.t?.startsWith('ad_')) return adGuest(m);
   if (m.t === 'sala') { if (!document.querySelector('#arena.ativa')) desenhaSala(); desenhaPlacar(); }
   if (m.t === 'inicio') { a.perguntas = m.perguntas; a.acabou = false; $('fimArena').style.display = 'none'; mostrar('arena'); contagem(() => {}); }
-  if (m.t === 'q' && a.perguntas && !a.jog[a.eu]?.fora) mostrarPergunta(m.i);
+  if (m.t === 'q' && a.perguntas && m.i >= 0 && m.i < a.perguntas.length && !a.jog[a.eu]?.fora) mostrarPergunta(m.i);
   if (m.t === 'placar') desenhaPlacar();
   if (m.t === 'revela' && a.perguntas && !a.jog[a.eu]?.fora) revelar();
   if (m.t === 'fim' && a.perguntas && !a.jog[a.eu]?.fora) { a.acabou = true; fimArena(); }

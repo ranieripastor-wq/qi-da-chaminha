@@ -78,7 +78,8 @@ function horasParaAmanha() {
   return h ? `${h}h${String(m).padStart(2, '0')}` : `${m} min`;
 }
 function mostrarFimDiario(erro) {
-  const f = feitoHoje(); if (!f) return;
+  // terminou depois da meia-noite: mostra a tentativa que acabou de fazer
+  const f = feitoHoje() || (ler('diario', null)?.fim ? ler('diario', null) : null); if (!f) return;
   $('fimArenaMascote').innerHTML = chaminha(80);
   $('fimArenaTitulo').innerHTML = `📅 Desafio #${numDesafio(f.dia)}`;
   $('fimArenaPlacar').innerHTML = `<div class="quadrinhos">${f.marcas.join('')}</div><b>${f.ac}/${POR_DUELO}</b> · ${f.pts} pontos`
@@ -103,7 +104,16 @@ function desenhaBotaoDiario() {
 
 let fimEhDiario = false;
 const _mostrarFim = mostrarFimDiario;
-mostrarFimDiario = erro => { fimEhDiario = true; _mostrarFim(erro); };
+mostrarFimDiario = erro => {
+  fimEhDiario = true; _mostrarFim(erro);
+  // ficou sem internet no fim: tenta mandar de novo quando a caixa abrir outra vez
+  const f = feitoHoje();
+  if (erro === undefined && f?.fim && !f.pos && ler('apelido', '') && !enviandoDia) {
+    enviandoDia = true;
+    enviarDiario(f).then(r => { enviandoDia = false; if (!r.erro) { guardar('diario', { ...f, pos: r.pos, total: r.total }); buscarDiario(); } if (fimEhDiario) _mostrarFim(r.erro); });
+  }
+};
+let enviandoDia = false;
 const revancheArena = $('fimRevanche').onclick, sairFim = $('fimSair').onclick, sairArenaX = $('sairArena').onclick;
 const fecharFimDiario = () => { clique(); fimEhDiario = false; $('fimArena').style.display = 'none'; pararArena(); };
 $('fimRevanche').onclick = e => fimEhDiario ? (fecharFimDiario(), abaRank = 'hoje', abrirRanking()) : revancheArena(e);

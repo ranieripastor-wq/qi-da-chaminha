@@ -37,14 +37,16 @@ function celulaSvg(c, tam = 60) {
   const pos = { 1: [[30, 30]], 2: [[17, 30], [43, 30]], 3: [[30, 16], [16, 43], [44, 43]] }[c.n], r = c.n === 1 ? 19 : 11.5;
   return `<svg viewBox="0 0 60 60" width="${tam}" height="${tam}">${DEFS}${pos.map(([x, y]) => formaSvg(c.forma, x, y, r, c.preench, c.rot)).join('')}</svg>`;
 }
+// nome para leitor de tela: "2 losango listrado girado 90°"
+const descreve = c => `${c.n} ${c.forma} ${c.preench}` + (c.rot ? ` girado ${c.rot}°` : '');
 const chave = c => `${c.forma}|${c.n}|${c.preench}|${c.rot}`;
 
 // botões com desenho (o botao() comum só aceita texto)
-function botoesSvg(palco, ops, iCerta, colunas = 3) {
+function botoesSvg(palco, ops, iCerta, colunas = 3, nomes = []) {
   const g = grade(palco, colunas); g.style.gap = '10px'; g.style.padding = '8px 2px';
-  embaralha(ops.map((h, i) => [h, i])).forEach(([h, i]) => {
+  embaralha(ops.map((h, i) => [h, i])).forEach(([h, i], pos) => {
     const b = document.createElement('button'); b.className = 'opc'; b.style.padding = '6px 0'; b.style.lineHeight = '0';
-    b.innerHTML = h; b.setAttribute('aria-label', 'Opção');
+    b.innerHTML = h; b.setAttribute('aria-label', nomes[i] || 'Opção ' + (pos + 1));
     if (i === iCerta) b.dataset.certo = 1;
     b.onclick = () => i === iCerta ? ganhar(b) : errar(b);
     g.appendChild(b);
@@ -83,7 +85,7 @@ function matriz(d) {
       q.style.cssText = 'display:grid;grid-template-columns:repeat(3,58px);gap:5px;justify-content:center;margin:2px auto 6px';
       q.innerHTML = m.grade.flatMap((l, r) => l.map((c, k) => cel(c, r === 2 && k === 2))).join('');
       palco.appendChild(q);
-      botoesSvg(palco, [m.certa, ...m.erradas].map(c => celulaSvg(c, 56)), 0, 3);
+      botoesSvg(palco, [m.certa, ...m.erradas].map(c => celulaSvg(c, 56)), 0, 3, [m.certa, ...m.erradas].map(descreve));
     } };
 }
 
