@@ -4,16 +4,17 @@ const AREAS_T = {
   matriz: ['🔷', 'Matrizes', 'logica'], serie: ['🔢', 'Sequências', 'logica'], verbal: ['💬', 'Verbal', 'linguagem'],
   aritmetica: ['➗', 'Raciocínio numérico', 'matematica'], digitos: ['🧠', 'Memória', 'memoria'],
   rotacao: ['🔄', 'Visão espacial', 'atencao'], balanca: ['⚖️', 'Balanças', 'matematica'],
+  figuras: ['🔶', 'Sequência de figuras', 'logica'], intruso: ['🔍', 'Figura diferente', 'atencao'],
 };
 // ordem do teste completo: 6 itens por nível de dificuldade (misturados dentro do nível)
 const PLANO_QI = [
-  ['matriz', 'serie', 'verbal', 'aritmetica', 'digitos', 'matriz'],
-  ['matriz', 'serie', 'verbal', 'aritmetica', 'rotacao', 'matriz'],
-  ['matriz', 'serie', 'verbal', 'aritmetica', 'balanca', 'digitos'],
+  ['matriz', 'serie', 'verbal', 'aritmetica', 'digitos', 'figuras'],
+  ['matriz', 'serie', 'verbal', 'aritmetica', 'rotacao', 'intruso'],
+  ['matriz', 'serie', 'verbal', 'aritmetica', 'balanca', 'figuras'],
   ['matriz', 'serie', 'verbal', 'aritmetica', 'rotacao', 'balanca'],
-  ['matriz', 'serie', 'verbal', 'aritmetica', 'digitos', 'matriz'],
+  ['matriz', 'serie', 'verbal', 'aritmetica', 'digitos', 'figuras'],
 ];
-const PLANO_LOGICA = [0, 1, 2, 3, 4].map(() => ['matriz', 'serie', 'balanca', 'rotacao']);
+const PLANO_LOGICA = ['balanca', 'rotacao', 'intruso', 'balanca', 'rotacao'].map(x => ['matriz', 'serie', 'figuras', x]);
 
 // ---------- desenho ----------
 const TINTA = '#2B1408';
@@ -161,7 +162,7 @@ function dadosAritmetica(d) {
   if (d === 1) { const a = sorteia(12, 30), b = sorteia(5, 15), c = sorteia(3, 10); certa = a + b - c;
     p = `Lia tinha ${a} figurinhas, ganhou ${b} e deu ${c} para a irmã. Com quantas ficou?`; erradas = [a + b + c, a - b + c, certa + 1, certa - 2]; porque = `${a} + ${b} − ${c} = ${certa}.`; }
   else if (d === 2) { const pr = sorteia(2, 9), n = sorteia(2, 5); let m = sorteia(6, 9); certa = m * pr; pre = 'R$ ';
-    p = `${n} cadernos custam R$ ${n * pr}. Quanto custam ${m} cadernos?`; erradas = [certa + pr, certa - pr, n * pr + m, certa + 2]; porque = `Cada caderno custa R$ ${pr}; ${m} × ${pr} = ${certa}.`; }
+    p = `${n} cadernos custam R$ ${n * pr}. Quanto custam ${m} cadernos?`; erradas = [certa + pr, certa - pr, n * pr + m, certa + 2, certa + 2 * pr, certa - 1]; porque = `Cada caderno custa R$ ${pr}; ${m} × ${pr} = ${certa}.`; }
   else if (d === 3) { const [v, min] = um([[60, 45], [60, 20], [30, 40], [90, 20], [120, 15], [40, 45], [60, 50]]); const km = v * min / 60; certa = min;
     p = `Um ônibus anda a ${v} km por hora. Quantos minutos ele leva para andar ${km} km?`; erradas = [min + 10, min - 5, km, Math.round(60 * v / km / 10) * 10 || min + 15]; porque = `Em 1 minuto ele anda ${v / 60} km; ${km} ÷ ${v / 60} = ${min} minutos.`; }
   else if (d === 4) { const [a, b] = um([[2, 4], [3, 6], [4, 2], [6, 3], [2, 6], [6, 2], [3, 1]]), t = b * sorteia(1, 3) * (a === 3 && b === 1 ? 1 : 1); certa = a * t / b;
@@ -178,7 +179,8 @@ function aritmetica(d) {
 // ---------- 5. Memória de dígitos (na ordem e de trás para frente, como no WAIS) ----------
 function dadosDigitos(d) {
   const n = [0, 5, 6, 4, 5, 6][d], inverso = d >= 3;
-  const seq = []; while (seq.length < n) { const x = sorteia(1, 9); if (x !== seq.at(-1)) seq.push(x); }
+  let seq;
+  do { seq = []; while (seq.length < n) { const x = sorteia(1, 9); if (x !== seq.at(-1)) seq.push(x); } } while (inverso && seq.join() === [...seq].reverse().join());
   const alvo = inverso ? [...seq].reverse() : seq, fmt = a => a.join(' '), certa = fmt(alvo);
   const variantes = new Set();
   for (let t = 0; t < 40 && variantes.size < 3; t++) {
@@ -258,7 +260,48 @@ function balanca(d) {
     } };
 }
 
-const QIT = { matriz, serie, verbal, aritmetica, digitos, rotacao, balanca };
+// ---------- 8. Sequência de figuras (o que vem no 5º quadro?) ----------
+function dadosFiguras(d) {
+  // só figuras que mudam de cara a cada 45° (a cruz e o quadrado se repetiriam)
+  const forma = d === 1 ? 'seta' : um(['seta', 'seta', 'triangulo']), P = embaralha(PREENCH), base = sorteia(0, 7) * 45;
+  // cada nível soma uma regra: giro, preenchimento em ciclo, quantidade em ciclo, giro ao contrário
+  const giro = d === 1 ? 90 : d === 5 ? -45 : 45, sentido = giro > 0 ? 'horário' : 'anti-horário';
+  const quadro = i => ({ forma, rot: ((base + i * giro) % 360 + 360) % 360,
+    preench: d >= 3 ? P[i % 3] : d === 2 ? P[i % 2] : 'cheio', n: d >= 4 ? i % 3 + 1 : 1 });
+  const regras = [`a figura gira ${Math.abs(giro)}° no sentido ${sentido}`];
+  if (d === 2) regras.push('o preenchimento se reveza entre dois'); if (d >= 3) regras.push('o preenchimento segue um ciclo de 3');
+  if (d >= 4) regras.push('a quantidade vai 1, 2, 3 e volta');
+  const certa = quadro(4), cand = [quadro(3), quadro(5), { ...certa, rot: (certa.rot + 180) % 360 }];
+  [0, 45, 90, 135, 180, 225, 270, 315].forEach(rot => cand.push({ ...certa, rot }));
+  PREENCH.forEach(preench => cand.push({ ...certa, preench })); [1, 2, 3].forEach(n => cand.push({ ...certa, n }));
+  const vistas = new Set([chave(certa)]), erradas = [];
+  for (const c of [cand[0], ...embaralha(cand.slice(1))]) { const k = chave(c); if (!vistas.has(k)) { vistas.add(k); erradas.push(c); } if (erradas.length === 5) break; }
+  return { quadros: [0, 1, 2, 3].map(quadro), certa, erradas, regra: 'A cada quadro, ' + regras.join(', ') + '.' };
+}
+function figuras(d) {
+  const x = dadosFiguras(d);
+  return { p: 'Qual figura vem no 5º quadro?', porque: x.regra,
+    monta(palco) {
+      const q = document.createElement('div');
+      q.style.cssText = 'display:grid;grid-template-columns:repeat(5,52px);gap:4px;justify-content:center;margin:2px auto 8px';
+      q.innerHTML = [...x.quadros, null].map(c => `<div style="background:#fff;border:2px solid ${TINTA};border-radius:8px;display:flex;align-items:center;justify-content:center;aspect-ratio:1">${c ? celulaSvg(c, 46) : '<b style="font-size:30px;color:#D9480F">?</b>'}</div>`).join('');
+      palco.appendChild(q);
+      botoesSvg(palco, [x.certa, ...x.erradas].map(c => celulaSvg(c, 56)), 0, 3, [x.certa, ...x.erradas].map(descreve));
+    } };
+}
+
+// ---------- 9. Figura diferente (4 são a mesma peça girada; 1 está espelhada) ----------
+function dadosIntruso() {
+  const base = normaliza(PECAS[um(Object.keys(PECAS))]);
+  return { iguais: [0, 1, 2, 3].map(k => gira(base, k)), certa: gira(espelha(base), sorteia(0, 3)) };
+}
+function intruso() {
+  const x = dadosIntruso();
+  return { p: 'Quatro peças são a MESMA, só que giradas. Qual é a diferente?', porque: 'A diferente está espelhada, como num espelho: nenhum giro deixa ela igual às outras.',
+    monta(palco) { botoesSvg(palco, [x.certa, ...x.iguais].map(q => pecaSvg(q, 70)), 0, 3); } };
+}
+
+const QIT = { matriz, serie, verbal, aritmetica, digitos, rotacao, balanca, figuras, intruso };
 // fila do teste: [area, dificuldade] na ordem em que aparecem
 const filaTeste = area => (area === 'logica' ? PLANO_LOGICA : PLANO_QI).flatMap((nivel, k) => embaralha(nivel).map(a => [a, k + 1]));
 // QI a partir dos acertos ponderados pela dificuldade: média 100, desvio 15 (a média esperada é acertar metade dos pontos)
@@ -281,6 +324,8 @@ function qiDoTeste(respostas) {
     const r = dadosRotacao(), giros = [0, 1, 2, 3].map(k => kq(gira(r.modelo, k)));
     console.assert(giros.includes(kq(r.certa)) && r.erradas.every(e => !giros.includes(kq(e))) && new Set(r.erradas.map(kq)).size === 3, 'rotação');
     const b = dadosBalanca(d); console.assert(b.certa > 1, 'balança');
+    const f = dadosFiguras(d); console.assert(f.erradas.length === 5 && new Set([f.certa, ...f.erradas].map(chave)).size === 6, 'figuras', d);
+    const t = dadosIntruso(), giros2 = t.iguais.map(kq); console.assert(new Set(giros2).size === 4 && !giros2.includes(kq(t.certa)), 'intruso');
   }
   [1, 2, 3, 4, 5].forEach(d => console.assert(VERBAL.filter(v => v[0] === d).length >= 5, 'verbal poucas no nível', d));
   console.assert(qiDoTeste(Array(30).fill({ d: 3, certo: true })) === 145 && qiDoTeste(Array(30).fill({ d: 3, certo: false })) === 70, 'escala do QI');

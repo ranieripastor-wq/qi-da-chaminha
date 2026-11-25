@@ -1,6 +1,8 @@
 // Arena: quiz por assunto (sozinho) e duelo ao vivo de 2 a 20 pessoas, Time Chaminha × Time Gelinho.
 // Conexão direta entre os celulares (PeerJS): o anfitrião recebe todos e comanda o ritmo.
 const POR_DUELO = 10, TEMPO_Q = 12, MAX_JOG = 20;
+// raciocínio precisa de tempo para pensar
+const TEMAS_QI = ['raciocinio', 'padroes'], tempoDe = q => (q && TEMAS_QI.includes(q.c) ? 25 : TEMPO_Q);
 const misturar = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const TIMES = [['🔥', 'Time Chaminha'], ['❄️', 'Time Gelinho']];
 
@@ -40,7 +42,7 @@ const meuLugar = a => ordenados(a).findIndex(([p]) => p === a.eu) + 1;
 function abrirDuelo() {
   pararArena();
   const lista = $('catLista'); lista.innerHTML = '';
-  [['mix', '🎲', 'Misturado'], ...Object.entries(TEMAS).map(([k, [ic, nome]]) => [k, ic, nome])].forEach(([k, ic, nome], n) => {
+  [...TEMAS_QI, 'mix', ...Object.keys(TEMAS).filter(k => !TEMAS_QI.includes(k))].map(k => k === 'mix' ? ['mix', '🎲', 'Misturado'] : [k, ...TEMAS[k]]).forEach(([k, ic, nome], n) => {
     const b = document.createElement('button'); b.className = 'btn chip'; b.dataset.cat = k;
     b.setAttribute('aria-pressed', n === 0); b.innerHTML = `${ic} ${nome}`;
     b.onclick = () => { clique(); lista.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x === b)); };
@@ -50,7 +52,7 @@ function abrirDuelo() {
   $('dueloRecorde').textContent = `🏆 Vitórias em duelos: ${ler('vitorias', 0)}`;
   mostrar('duelo');
 }
-const catEscolhida = () => document.querySelector('#catLista .chip[aria-pressed="true"]')?.dataset.cat || 'mix';
+const catEscolhida = () => document.querySelector('#catLista .chip[aria-pressed="true"]')?.dataset.cat || TEMAS_QI[0];
 const nomeCat = c => c === 'mix' || !TEMAS[c] ? '🎲 Misturado' : `${TEMAS[c][0]} ${TEMAS[c][1]}`;
 
 function pararArena() {
@@ -83,7 +85,7 @@ function mostrarPergunta(i) {
   clearTimeout(a.espera); a.i = i; a.respondeu = false; a.inicio = performance.now();
   if (a.diario) marcarDiario(a, false); // viu a pergunta e saiu: conta como erro
   $('arenaNum').textContent = `${TEMAS[q.c][0]} ${TEMAS[q.c][1]} · ${i + 1}/${a.perguntas.length}`;
-  $('arenaPergunta').textContent = q.p;
+  $('arenaPergunta').textContent = q.p; $('arenaPergunta').onclick = () => falarAlto(q.p);
   $('arenaExp').textContent = a.modo === 'duelo' ? 'Rápido! Quem responde primeiro ganha mais pontos.' : 'Responda antes do tempo acabar!';
   $('arenaExp').className = 'exp';
   const g = $('arenaOps'); g.innerHTML = '';
@@ -93,7 +95,7 @@ function mostrarPergunta(i) {
   });
   const barra = $('arenaBarra'); clearInterval(a.relogio);
   a.relogio = setInterval(() => {
-    const resta = 1 - (performance.now() - a.inicio) / (TEMPO_Q * 1000);
+    const resta = 1 - (performance.now() - a.inicio) / (tempoDe(q) * 1000);
     barra.style.width = Math.max(0, resta * 100) + '%'; barra.style.background = resta < .3 ? 'var(--vermelho)' : '';
     if (resta <= 0) { clearInterval(a.relogio); if (!a.respondeu) responderArena(null, null); }
   }, 100);
@@ -104,7 +106,7 @@ function responderArena(escolha, el) {
   const a = arena; if (!a || a.respondeu || a.jog[a.eu]?.fora) return;
   a.respondeu = true;
   const q = a.perguntas[a.i], certo = escolha === q.certa;
-  const resta = Math.max(0, 1 - (performance.now() - a.inicio) / (TEMPO_Q * 1000));
+  const resta = Math.max(0, 1 - (performance.now() - a.inicio) / (tempoDe(q) * 1000));
   const pts = certo ? 100 + Math.round(50 * resta) : 0;
   document.querySelectorAll('#arenaOps .opc').forEach(b => { b.disabled = true; if (b === el) b.classList.add(certo ? 'certo' : 'errado'); });
   if (certo) { som([[660, 0, .1], [880, .08, .18]]); vibrar(30); } else { somErro(); vibrar(120); }
@@ -258,7 +260,7 @@ function proximaQuestao(i) {
   const a = arena; if (!a) return;
   if (i >= a.perguntas.length) { a.rodando = false; avisarTodos({ t: 'fim', jog: a.jog }); fimArena(); return; }
   avisarTodos({ t: 'q', i }); mostrarPergunta(i);
-  a.espera = setTimeout(() => fecharQuestao(i), (TEMPO_Q + 1.5) * 1000); // folga para as respostas chegarem
+  a.espera = setTimeout(() => fecharQuestao(i), (tempoDe(a.perguntas[i]) + 1.5) * 1000); // folga para as respostas chegarem
 }
 function checarFimQuestao() {
   const a = arena; if (!a?.rodando) return;

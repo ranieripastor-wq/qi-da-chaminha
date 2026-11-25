@@ -12,9 +12,9 @@ function semente(s) {
 function perguntasDoDia(dia) {
   const r = semente('qi-chaminha-' + dia);
   const emb = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  const temas = emb(Object.keys(TEMAS).sort()), usadas = new Set();
+  const temas = emb(Object.keys(TEMAS).filter(k => !TEMAS_QI.includes(k)).sort()), usadas = new Set();
   return Array.from({ length: POR_DUELO }, (_, k) => {
-    const c = temas[k % temas.length], lista = TEMAS[c][2];
+    const c = k % 3 === 2 ? temas[k % temas.length] : TEMAS_QI[k % 2], lista = TEMAS[c][2];
     let i; do i = Math.floor(r() * lista.length); while (usadas.has(c + i));
     usadas.add(c + i);
     const [p, certa, erradas, exp] = lista[i];

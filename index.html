@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Teste de QI grátis no formato dos testes reais, desafio do dia, duelo ao vivo e ranking com todo o Brasil. Com a Chaminha!">
 <meta name="theme-color" content="#2B1408">
 <title>QI da Chaminha</title>
@@ -18,7 +18,7 @@
   html,body { margin:0; height:100%; color:var(--tinta); overscroll-behavior:none; overflow:hidden;
     font-family:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
     background: radial-gradient(circle at 50% 0%, #5A2A10 0%, var(--fundo) 60%) fixed var(--fundo); }
-  button { font-family:inherit; }
+  button { font-family:inherit; touch-action:manipulation; }
   .tela { position:fixed; inset:0; display:none; flex-direction:column; max-width:480px; margin:0 auto;
     padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
   .tela.ativa { display:flex; animation:entra .35s ease-out; }
@@ -179,7 +179,7 @@
   .modal input { font-size:22px; padding:10px 14px; border-radius:14px; border:3px solid var(--tinta); text-align:center; font-weight:800; color:var(--tinta); }
   h3.secao { color:var(--amarelo); margin:18px 0 6px; font-size:20px; }
   .duelBtn { width:100%; max-width:380px; display:flex; align-items:center; gap:10px; padding:8px 14px; font-size:22px; line-height:1.1;
-    background:linear-gradient(90deg,#FF8A1F,#F2542D 48%,#4AA8E0 52%,#7FD1F5); color:#fff; box-shadow:0 5px 0 #123A5A; border-radius:20px; text-align:left; }
+    background:linear-gradient(90deg,#D9480F,#C2331A 48%,#1971C2 52%,#1C7ED6); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35); box-shadow:0 5px 0 #123A5A; border-radius:20px; text-align:left; }
   .duelBtn small { display:block; font-size:14px; opacity:.9; } .duelBtn .mini { display:flex; } .duelBtn svg { width:34px; height:auto; }
   .diaBtn { width:100%; max-width:380px; display:flex; align-items:center; gap:10px; padding:8px 14px; font-size:21px; line-height:1.1; text-align:left;
     background:linear-gradient(90deg,#FFD23F,#7BD389); color:var(--tinta); box-shadow:0 5px 0 #2E6B3A; border-radius:20px; }
@@ -223,6 +223,7 @@
   .adTimes span:first-child { background:#5A2A10; } .adTimes span:last-child { background:#16405F; } .adTimes b { display:block; font-size:26px; }
   #fimArena { position:fixed; inset:0; background:rgba(43,20,8,.92); display:none; align-items:center; justify-content:center; z-index:6; padding:20px; }
   .areaBtn { display:flex; align-items:center; gap:12px; font-size:24px; padding:12px 18px; width:100%; }
+  #pergunta.ouvir, #arenaPergunta { cursor:pointer; } #pergunta.ouvir::after, #arenaPergunta::after { content:"🔈"; font-size:.65em; margin-left:6px; opacity:.55; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
   @media (max-height:700px) { #pergunta { font-size:21px; min-height:52px; } #fala { min-height:70px; } }
 </style>
@@ -1133,7 +1134,7 @@ function carregar(spec) {
   const palco = $('palco');
   palco.innerHTML = ''; palco.style.background = ''; palco.onclick = null;
   $('card').classList.remove('certo');
-  $('pergunta').onclick = null; $('nivel').onclick = null; $('pergunta').textContent = textoFase(fase.p);
+  $('pergunta').onclick = null; $('pergunta').classList.remove('ouvir'); $('nivel').onclick = null; $('pergunta').textContent = textoFase(fase.p);
   $('nivel').textContent = 'NÍVEL ' + nivel;
   $('barraJogo').style.width = ((nivel - 1) % 10 * 10) + '%'; $('barraJogo').style.background = '';
   fala(nivel === 1 ? 'Oi! Eu sou a Chaminha. Aqui nada é o que parece! 🔥' : BOAS_VINDAS[Math.floor(Math.random() * BOAS_VINDAS.length)]);
@@ -1240,6 +1241,7 @@ const QI = {
   },
 };
 
+const MISTURA_TREINO = { logica: ['matriz', 'balanca'], matematica: ['aritmetica'], memoria: ['digitos'], atencao: ['rotacao'], linguagem: ['verbal'] };
 let sessao = null;
 function iniciarSessao(modo, area) {
   clique();
@@ -1255,12 +1257,15 @@ function carregarQuestao() {
   const s = sessao, teste = s.modo === 'qi', [area, d] = teste ? s.fila[s.i] : [s.area, s.d], NOMES = teste ? AREAS_T : AREAS;
   R = Math.random;
   // tenta não repetir pergunta já vista
-  for (let t = 0; t < 15; t++) { fase = (teste ? QIT : QI)[area](d); const sig = fase.id || fase.p; if (!vistas.includes(sig) || t === 14) { vistas.push(sig); break; } }
+  // treino: metade das vezes usa os mesmos tipos do teste de QI (matrizes, balanças, problemas...), com mais tempo
+  const mix = !teste && MISTURA_TREINO[area] && R() < .5;
+  for (let t = 0; t < 15; t++) {
+    fase = mix ? QIT[um(MISTURA_TREINO[area])](d) : (teste ? QIT : QI)[area](d); if (mix) fase.tempo = 40; const sig = fase.id || fase.p; if (!vistas.includes(sig) || t === 14) { vistas.push(sig); break; } }
   vistas = vistas.slice(-400); guardar('vistas', vistas);
   s.areaAtual = area; s.dAtual = d;
   const palco = $('palco'); palco.innerHTML = ''; palco.style.background = ''; palco.onclick = null;
   $('card').classList.remove('certo');
-  $('pergunta').onclick = null; $('nivel').onclick = null; $('pergunta').textContent = fase.p;
+  $('pergunta').onclick = () => falarAlto($('pergunta').textContent); $('pergunta').classList.add('ouvir'); $('nivel').onclick = null; $('pergunta').textContent = fase.p;
   $('nivel').textContent = `${NOMES[area][0]} ${s.i + 1}/${s.total}`;
   fala(s.i === 0 ? (teste ? 'Vamos medir esse cérebro! Sem pressa: pense com calma. 🧠' : `Treino de ${AREAS[area][1]}! Bora!`) : um(teste ? ['Próxima!', 'Com calma! 👀', 'Essa é boa!', 'Olhe os detalhes.', 'Vai que dá!'] : ['Próxima!', 'Foco! 👀', 'Essa é boa!', 'Pensa rápido!', 'Vai que dá!']));
   fase.monta(palco);
@@ -1323,7 +1328,7 @@ function fimSessao() {
     const acima = FAMOSOS.filter(([, v]) => v > qi).at(-1);
     $('resTitulo').textContent = s.area ? 'Seu QI de lógica' : 'Seu QI estimado';
     $('resNumero').textContent = qi; $('resRotulo').textContent = rotuloQI(qi);
-    $('resDetalhe').innerHTML = `${acertos} de ${s.total} certas · recorde: ${melhor}<br>Melhor que <b>${percentil(qi)}%</b> das pessoas`
+    $('resDetalhe').innerHTML = `${acertos} de ${s.total} certas · recorde: ${melhor}` + (qi >= 90 ? `<br>Melhor que <b>${percentil(qi)}%</b> das pessoas` : '<br>Cada teste é diferente: treine e tente de novo!')
       + (s.area ? '' : `<br>Ponto forte: <b>${AREAS_T[forte][1]}</b> · Treine: <b>${AREAS_T[fraca][1]}</b>`)
       + (novaMeta ? `<br>🏅 <b>Medalha nova: QI ${novaMeta}!</b>` : '')
       + (acima ? `<br>Próximo famoso: ${acima[0]} (${acima[1]})` : '') + xpTexto;
@@ -1416,6 +1421,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 <script src="perguntas.js"></script>
 <script src="perguntas2.js"></script>
 <script src="perguntas3.js"></script>
+<script src="perguntas4.js"></script>
 <script src="testeqi.js"></script>
 <script src="arena.js"></script>
 <script src="adedonha.js"></script>
